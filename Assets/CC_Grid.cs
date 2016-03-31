@@ -31,6 +31,7 @@ public class CC_Grid : MonoBehaviour {
 	private float minp = 0.05f; // for own cell contribution
 	private float maxp = 0.70f; // for neighboring cell contribution
 
+	public GameObject prefab;
 
 
 
@@ -38,101 +39,110 @@ public class CC_Grid : MonoBehaviour {
 	 * Unity Functions
 	 **/
 	void Awake () {
-		dt = Time.deltaTime; // 0.04 25fps
-
-		// Grid Components
-		size = origin.localScale;
-		sidelength = size.x / res;
-		cell = GetComponent<CC_Cell> ();
-
-		// Declare grids
-		gridA = new CC_Cell[res * res];
-		gridB = new CC_Cell[res * res];
+//		dt = Time.deltaTime; // 0.04 25fps
+//
+//		// Grid Components
+//		size = origin.localScale;
+//		sidelength = size.x / res;
+//		cell = GetComponent<CC_Cell> ();
+//
+//		// Declare grids
+//		gridA = new CC_Cell[res * res];
+//		gridB = new CC_Cell[res * res];
 
 		// Get all agents
 		agents = GameObject.FindObjectsOfType(typeof (NavMeshAgent));
+
+		foreach (NavMeshAgent a in agents) {
+			print("HI THERE");
+		}
+
+		for (int i = 0; i < 10; i++) {
+			Instantiate(prefab, new Vector3(i * 2.0f, 0, 0), Quaternion.identity);	
+		}
 
 		// Initialize gridA
 		// get all of the densities
 
 
 	}
-
-	// Update is called once per frame
-	void Update () {
-		
-
-
-	}
-
-
-	/**
-	 * Helper Functions
-	 **/
-
-	void updateDensity(CC_Cell[] grid) {
-		foreach (NavMeshAgent a in agents) {
-			Vector3 pos = a.nextPosition;
-			float speed = a.desiredVelocity.magnitude;
-
-
-			float r = a.radius;
-		}
-	}
-
-
-
-
-
-
-	/**
-	 *  Get and set functions below
-	 * */
-
-
-	// Get the active grid in the cell
-	CC_Cell[] getActiveGrid() {
-		// false = 0 = gridA
-		// true = gridB
-		if (toggle) {
-			return gridB;
-		} else {
-			return gridA;
-		}
-	}
-
-	CC_Cell[] getInactiveGrid() {
-		if (!toggle) {
-			return gridB;
-		} else {
-			return gridA;
-		}
-	}
-
-	// Overload
-	int getCellidx(Vector2 pos) {
-		return getCellidx (pos.x, pos.y);
-	}
-
-	// Get cell index from location
-	// x and y range from [0, 1]
-	int getCellidx(float x, float y) {
-		int i = (int)(x / sidelength);
-		int j = (int)(y / sidelength);
-
-		int idx = res * i + j;
-
-		// Edge case is (1, 1)
-		if (idx > res * res - 1) {
-			idx = res * res - 1;
-		}
-
-		return idx;
-	}
-
-	// bilerp
-	// Return the 
-	float bilerp(float q, float x1, float y1, float x2, float y2) {
-		return 1.0f;
-	}
+//
+//	// Update is called once per frame
+//	void Update () {
+//		
+//
+//
+//	}
+//
+//
+//	/**
+//	 * Helper Functions
+//	 **/
+//
+//	void updateDensity(CC_Cell[] grid) {
+//		foreach (NavMeshAgent a in agents) {
+//			Vector3 pos = a.nextPosition;
+//			float speed = a.desiredVelocity.magnitude;
+//
+//
+//			float r = a.radius;
+//		}
+//	}
+//
+//
+//
+//
+//
+//
+//	/**
+//	 *  Get and set functions below
+//	 * */
+//
+//
+//	// Get the active grid in the cell
+//	CC_Cell[] getActiveGrid() {
+//		// false = 0 = gridA
+//		// true = gridB
+//		if (toggle) {
+//			return gridB;
+//		} else {
+//			return gridA;
+//		}
+//	}
+//
+//	CC_Cell[] getInactiveGrid() {
+//		if (!toggle) {
+//			return gridB;
+//		} else {
+//			return gridA;
+//		}
+//	}
+//
+//	// Overload
+//	int getCellidx(Vector2 pos) {
+//		return getCellidx (pos.x, pos.y);
+//	}
+//
+//	// Get cell index from location
+//	// x and y range from [0, 1]
+//	int getCellidx(float x, float y) {
+//		int i = (int)(x / sidelength);
+//		int j = (int)(y / sidelength);
+//
+//		int idx = res * i + j;
+//
+//		// Edge case is (1, 1)
+//		if (idx > res * res - 1) {
+//			idx = res * res - 1;
+//		}
+//
+//		return idx;
+//	}
+//
+//	// bilerp
+//	// Return the 
+//	float bilerp(float q, float x1, float y1, float x2, float y2) {
+//		return 1.0f;
+//	}
+//}
 }

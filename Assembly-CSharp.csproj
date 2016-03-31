@@ -45,9 +45,19 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+     <Compile Include="Assets\Agent.cs" />
+     <Compile Include="Assets\CC_Agent.cs" />
+     <Compile Include="Assets\CC_AgentBox.cs" />
      <Compile Include="Assets\CC_Cell.cs" />
      <Compile Include="Assets\CC_Grid.cs" />
+     <Compile Include="Assets\ContinuumSolver.cs" />
+     <Compile Include="Assets\Grid.cs" />
+     <Compile Include="Assets\Grid2D.cs" />
+     <Compile Include="Assets\GridDensity.cs" />
+     <Compile Include="Assets\MACGrid.cs" />
+     <Compile Include="Assets\MeshColorer.cs" />
      <Compile Include="Assets\MoveTo.cs" />
+     <None Include="Assets\Vertex Colored.shader" />
      <None Include="Assets\Standard Assets\CrossPlatformInput\CrossPlatformInputGuidelines.txt" />
      <None Include="Assets\Standard Assets\Characters\ThirdPersonCharacter\ThirdPersonCharacterGuidelines.txt" />
      <None Include="Assets\Standard Assets\Characters\FirstPersonCharacter\FirstPersonCharacterGuidelines.txt" />
