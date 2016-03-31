@@ -158,4 +158,33 @@ public class Grid2D {
 			}
 		}
 	}
+
+	// -----------------------------------------------------------------------------
+	// Bilinear Interpolation
+	// Input: pos = position in local space
+	// -----------------------------------------------------------------------------
+	public float bilinear(Vector2 pos) {
+		// A = 00, B = 01, C = 11, D = 10 
+		Vector2 Aidx = getA (pos);
+		Vector2 Bidx = new Vector2 (Aidx [0], Aidx [1] + 1);
+		Vector2 Cidx = new Vector2 (Aidx [0] + 1, Aidx [1] + 1);
+		Vector2 Didx = new Vector2 (Aidx [0] + 1, Aidx [1]);
+
+		Vector2 Acoord = getCoordVector2(Aidx);
+
+		float dx = pos [0] - Acoord [0];
+		float dy = pos [1] - Acoord [1];
+
+		float c00 = getVal(Aidx);
+		float c01 = getVal(Bidx);
+		float c10 = getVal(Didx);
+		float c11 = getVal(Cidx);
+
+		// Interpolate on x
+		float a = c00 * (1 - dx) + c10 * dx;
+		float b = c01 * (1 - dx) + c11 * dx;
+
+		// Interpolate on y
+		return a * (1 - dy) + b * dy;
+	}
 }
