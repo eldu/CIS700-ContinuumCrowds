@@ -13,7 +13,13 @@ public class ContinuumSolver : MonoBehaviour {
 
 	private MACGrid mGrid;
 
-
+	// TODO: TINKER WITH THESE PARAMETERS
+	// Weights for Cost Function
+	// Unit Cost Field
+	public float PATH_LENGTH_WEIGHT = 0.8f;
+	public float TIME_WEIGHT = 0.8f;
+	public float DISCOMFORT = 0.8f;
+	public float DISCOMFORT_WEIGHT = 0.8f;
 
 
 	// Use this for initialization
@@ -37,14 +43,28 @@ public class ContinuumSolver : MonoBehaviour {
 	}
 
 	// Update is called once per frame
-	void Update () {
+	void FixedUpdate () {
 		// Clear Grids
 		mGrid.clear();
 
 		// Splat
 		mGrid.splat(agents);
 
+		// Calculate Speed Fields
+		mGrid.UpdateVelocityFields();
+
 		// Compute the unit cost field
+		foreach (Agent a in agents) {
+			
+		}
+		// Update Cost
+//		float cost = (PATH_LENGTH_WEIGHT * fx + TIME_WEIGHT + DISCOMFORT_WEIGHT * DISCOMFORT) / fx;
+//		gridCU.setVal (uij, PATH_LENGTH_COEFF);
+	}
+
+	// The farther away the agent is, the more discomforted he may be
+	float getDiscomfort(Agent a) {
+		return Vector3.Distance (a.GetComponent<Animator> ().bodyPosition, a.goal.position);
 	}
 
 	// TODO: YOU MESSED UP WHAT ARE YOU DOING
