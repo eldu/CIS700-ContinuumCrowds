@@ -12,14 +12,23 @@ public class MACGrid : MonoBehaviour {
 
 	float cellWidth;
 
+	// Goal
+	public BoxCollider box;
+	Vector3 box_min;
+	Vector3 box_max;
+
+
 	// Initalize all of the grids
 	Grid2D gridU; // X Velocity Grid
 	Grid2D gridV; // Z Velocity Grid
+	Grid2D gridW;
+	Grid2D gridS;
 	Grid2D gridD; // Density Grid
 	Grid2D gridCU; // Cost in x direction
 	Grid2D gridCV; // Cost in z direction
-	Grid2D[] gridRose = new Grid2D[4];
-	Vector2[] n = { new Vector2 (1, 0), new Vector2 (0, 1), new Vector2 (-1, 0), new Vector2 (0, -1) };
+	Grid2D marker; // 0 = empty, 1 = obstacle
+//	Grid2D[] gridRose = new Grid2D[4];
+//	Vector2[] n = { new Vector2 (1, 0), new Vector2 (0, 1), new Vector2 (-1, 0), new Vector2 (0, -1) };
 	Vector3[] gridAveVelocity;
 
 	// Tinkering Parameters
@@ -32,7 +41,7 @@ public class MACGrid : MonoBehaviour {
 //	private float density = (0.5f) ^ lamda;
 	public float MAX_DENSITY = 0.8f;
 
-	public MACGrid (Vector2 min, Vector2 max, Vector2 resolution) {
+	public MACGrid (Vector2 min, Vector2 max, Vector2 resolution, BoxCollider goal) {
 //		TODO: Grab components form the transform component to set min and max
 //		Vector3 origin = GetComponent<Transform> ().Translate;
 //		Vector3 scale = GetComponent<Transform> ().localScale; // Because the quad is rotated, the original xy plane now lies on the world xz plane
@@ -56,6 +65,11 @@ public class MACGrid : MonoBehaviour {
 			max = min + cellWidth * resolution;
 		}
 
+		// Set up Goal
+		this.box = goal;
+		Vector3 box_min = getLocalPoint(box.center - 0.5f * box.size);
+		Vector3 box_max = getLocalPoint(box.center + 0.5f * box.size);
+
 		clear ();
 	}
 
@@ -67,14 +81,17 @@ public class MACGrid : MonoBehaviour {
 	public void clear() {
 		gridU = new Grid2D(resx + 1, resz);
 		gridV = new Grid2D(resx, resz + 1);
+		gridW = new Grid2D (resx, resz);
+		gridS = new Grid2D (resx, resz);
 		gridD = new Grid2D(resx, resz);
 		gridCU = new Grid2D(resx, resz);
 		gridCV = new Grid2D(resx, resz);
 		gridAveVelocity = new Vector3[resx * resz];
+		marker = new Grid2D (resx, resz);
 
-		for (int i = 0; i < 4; i++) {
-			gridRose [i] = new Grid2D (resx, resz);
-		}
+//		for (int i = 0; i < 4; i++) {
+//			gridRose [i] = new Grid2D (resx, resz);
+//		}
 	}
 
 	public void splat(Agent[] agents) {
@@ -171,25 +188,44 @@ public class MACGrid : MonoBehaviour {
 		return fx;
 	}
 
-	public void UpdateVelocityFields() {
+	// Unit Cost Field
+	public float PATH_LENGTH_WEIGHT = 0.8f;
+	public float TIME_WEIGHT = 0.8f;
+	public float DISCOMFORT = 0.8f;
+	public float DISCOMFORT_WEIGHT = 0.8f;
+
+	public void UpdateVelocityAndCostFields() {
 		for (int i = 0; i < resx; i++) {
 			for (int j = 0; j < resz; j++) {
-				for (int d = 0; d < 4; d++) {
-					Vector2 ij = new Vector2 (i, j);
-					Vector2 eij = new Vector2 (i + 0.5f, j);
-					Vector2 nij = new Vector2 (i, j + 0.5f);
-					Vector2 wij = new Vector2 (i - 0.5f, j);
-					Vector2 sij = new Vector2 (i - 0.5f, j - 0.5f);
+				Vector2 ij = new Vector2 (i, j);
+				Vector2 eij = new Vector2 (i + 0.5f, j);
+				Vector2 nij = new Vector2 (i, j + 0.5f);
+				Vector2 wij = new Vector2 (i - 0.5f, j);
+				Vector2 sij = new Vector2 (i - 0.5f, j - 0.5f);
 
-					gridRose[0].setVal(ij, getVelocity (eij, new Vector2 (1f, 0f)));
-					gridRose[1].setVal(ij, getVelocity (nij, new Vector2 (0f, 1f)));
-					gridRose[2].setVal(ij, getVelocity (wij, new Vector2 (-1f, 0f)));
-					gridRose[3].setVal(ij, getVelocity (sij, new Vector2 (0f, -1f)));
-				}
+				float fu = getVelocity (eij, new Vector2 (1f, 0f));
+				gridU.setVal(ij, fu);
+				float cu = (PATH_LENGTH_WEIGHT * fu + TIME_WEIGHT + DISCOMFORT_WEIGHT * distance (eij)) / fu;
+				gridCU.setVal (ij, cu);
+
+				float fv = getVelocity (nij, new Vector2 (0f, 1f));
+				gridV.setVal(ij, fv);
+				float cv = (PATH_LENGTH_WEIGHT * fu + TIME_WEIGHT + DISCOMFORT_WEIGHT * distance (nij)) / fv;
+				gridCV.setVal (ij, cv);
+
+				float fw = getVelocity (wij, new Vector2 (-1f, 0f));
+				gridW.setVal (ij, fw);
+				float cw = (PATH_LENGTH_WEIGHT * fu + TIME_WEIGHT + DISCOMFORT_WEIGHT * distance (wij)) / fw;
+				gridCV.setVal (ij, cw);
+
+				float fs = getVelocity (sij, new Vector2 (0f, -1f));
+				gridS.setVal(ij, fs);
+				float cs = (PATH_LENGTH_WEIGHT * fu + TIME_WEIGHT + DISCOMFORT_WEIGHT * distance (sij)) / fs;
+				gridCV.setVal (ij, cs);
 			}
 		}
 	}
-
+//
 //	public void UpdateVelocityFields() {
 //		for (int i = 0; i < resx; i++) {
 //			for (int j = 0; j < resz; j++) {
@@ -258,5 +294,13 @@ public class MACGrid : MonoBehaviour {
 //			densities[i] = Mathf.Clamp01 (densities[i]);
 //		}
 //	}
+
+	// Discomfort From Goal From Any Point
+	// Local point
+	float distance(Vector2 pos) {
+		float dx = Mathf.Max(box_min.x - pos[0], 0, pos[0] - box_max.x);
+		float dy = Mathf.Max(box_min.z - pos[1], 0, pos[1] - box_max.z);
+		return Mathf.Sqrt(dx*dx + dy*dy);
+	}
 
 }
