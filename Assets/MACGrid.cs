@@ -26,9 +26,9 @@ public class MACGrid : MonoBehaviour {
 	Grid2D gridD; // Density Grid
 	Grid2D gridCU; // Cost in x direction
 	Grid2D gridCV; // Cost in z direction
-	Grid2D marker; // 0 = empty, 1 = obstacle
-//	Grid2D[] gridRose = new Grid2D[4];
-//	Vector2[] n = { new Vector2 (1, 0), new Vector2 (0, 1), new Vector2 (-1, 0), new Vector2 (0, -1) };
+	public Grid2D marker; // 0 = empty, 1 = obstacle
+	Grid2D[] gridRose = new Grid2D[4];
+	Vector2[] n = { new Vector2 (1, 0), new Vector2 (0, 1), new Vector2 (-1, 0), new Vector2 (0, -1) };
 	Vector3[] gridAveVelocity;
 
 	// Tinkering Parameters
@@ -89,9 +89,9 @@ public class MACGrid : MonoBehaviour {
 		gridAveVelocity = new Vector3[resx * resz];
 		marker = new Grid2D (resx, resz);
 
-//		for (int i = 0; i < 4; i++) {
-//			gridRose [i] = new Grid2D (resx, resz);
-//		}
+		for (int i = 0; i < 4; i++) {
+			gridRose [i] = new Grid2D (resx, resz);
+		}
 	}
 
 	public void splat(Agent[] agents) {
@@ -150,13 +150,23 @@ public class MACGrid : MonoBehaviour {
 	}
 
 	public float getDensity(Vector2 localpt) {
-//		Vector2 localpt = getLocalPoint (worldpt);
-		return gridD.getVal (gridD.getIdxFromPos (localpt));
+		int idx = gridD.getIdxFromPos (localpt);
+
+		// Boundary Conditions
+		if (idx < 0) {
+			return MAX_DENSITY + 1;
+		} else {
+			return gridD.getVal (idx);
+		}
 	}
 
 	public Vector2 getAverageVelocity(Vector2 localpt) {
-//		Vector2 localpt = getLocalPoint (worldpt);
-		return gridAveVelocity[gridD.getIdxFromPos (localpt)];
+		int idx = gridD.getIdxFromPos (localpt);
+		if (idx < 0) {
+			return new Vector2(0f, 0f); 
+		} else {
+			return gridAveVelocity [idx];
+		}
 	}
 
 	// Helper function for UpdateVelocityFields
@@ -165,9 +175,10 @@ public class MACGrid : MonoBehaviour {
 		float r = 0.5f / resx; // TODO: Currently only support square macgrids
 
 		float p = getDensity (uij);
-		Vector2 localstep = uij + r * un;
+		Vector2 localstep = uij + r * un; // 
 		Vector2 v_xrn = getAverageVelocity (localstep);
 		float p_xrn = getDensity (localstep);
+		// TODO: Check boundary conditions
 
 		// TODO: Incorporate terrain heightfield
 		float fx;
@@ -198,32 +209,51 @@ public class MACGrid : MonoBehaviour {
 		for (int i = 0; i < resx; i++) {
 			for (int j = 0; j < resz; j++) {
 				Vector2 ij = new Vector2 (i, j);
-				Vector2 eij = new Vector2 (i + 0.5f, j);
-				Vector2 nij = new Vector2 (i, j + 0.5f);
-				Vector2 wij = new Vector2 (i - 0.5f, j);
-				Vector2 sij = new Vector2 (i - 0.5f, j - 0.5f);
+				Vector2[] directions = getDirections (ij);
 
-				float fu = getVelocity (eij, new Vector2 (1f, 0f));
-				gridU.setVal(ij, fu);
-				float cu = (PATH_LENGTH_WEIGHT * fu + TIME_WEIGHT + DISCOMFORT_WEIGHT * distance (eij)) / fu;
-				gridCU.setVal (ij, cu);
+				for (int k = 0; k < 4; k++) {
+					float fu = getVelocity (directions [k], n [k]);
+					gridRose [i].setVal (ij, fu);
 
-				float fv = getVelocity (nij, new Vector2 (0f, 1f));
-				gridV.setVal(ij, fv);
-				float cv = (PATH_LENGTH_WEIGHT * fu + TIME_WEIGHT + DISCOMFORT_WEIGHT * distance (nij)) / fv;
-				gridCV.setVal (ij, cv);
+					float cu = (PATH_LENGTH_WEIGHT * fu + TIME_WEIGHT + DISCOMFORT_WEIGHT * distance (directions[k])) / fu;
+					gridRose [i].setVal (ij, cu);
+				}
 
-				float fw = getVelocity (wij, new Vector2 (-1f, 0f));
-				gridW.setVal (ij, fw);
-				float cw = (PATH_LENGTH_WEIGHT * fu + TIME_WEIGHT + DISCOMFORT_WEIGHT * distance (wij)) / fw;
-				gridCV.setVal (ij, cw);
-
-				float fs = getVelocity (sij, new Vector2 (0f, -1f));
-				gridS.setVal(ij, fs);
-				float cs = (PATH_LENGTH_WEIGHT * fu + TIME_WEIGHT + DISCOMFORT_WEIGHT * distance (sij)) / fs;
-				gridCV.setVal (ij, cs);
+//				Vector2 eij = new Vector2 (i + 0.5f, j);
+//				Vector2 nij = new Vector2 (i, j + 0.5f);
+//				Vector2 wij = new Vector2 (i - 0.5f, j);
+//				Vector2 sij = new Vector2 (i - 0.5f, j - 0.5f);
+//
+//				float fu = getVelocity (eij, new Vector2 (1f, 0f));
+//				gridU.setVal(ij, fu);
+//				float cu = (PATH_LENGTH_WEIGHT * fu + TIME_WEIGHT + DISCOMFORT_WEIGHT * distance (eij)) / fu;
+//				gridCU.setVal (ij, cu);
+//
+//				float fv = getVelocity (nij, new Vector2 (0f, 1f));
+//				gridV.setVal(ij, fv);
+//				float cv = (PATH_LENGTH_WEIGHT * fu + TIME_WEIGHT + DISCOMFORT_WEIGHT * distance (nij)) / fv;
+//				gridCV.setVal (ij, cv);
+//
+//				float fw = getVelocity (wij, new Vector2 (-1f, 0f));
+//				gridW.setVal (ij, fw);
+//				float cw = (PATH_LENGTH_WEIGHT * fu + TIME_WEIGHT + DISCOMFORT_WEIGHT * distance (wij)) / fw;
+//				gridCV.setVal (ij, cw);
+//
+//				float fs = getVelocity (sij, new Vector2 (0f, -1f));
+//				gridS.setVal(ij, fs);
+//				float cs = (PATH_LENGTH_WEIGHT * fu + TIME_WEIGHT + DISCOMFORT_WEIGHT * distance (sij)) / fs;
+//				gridCV.setVal (ij, cs);
 			}
 		}
+	}
+
+	Vector2[] getDirections(Vector2 ij) {
+		Vector2[] result = new Vector2[4];
+		result [0] = new Vector2 (ij [0] + 0.5f, ij [1]       );
+		result [1] = new Vector2 (ij [0]       , ij [1] + 0.5f);
+		result [2] = new Vector2 (ij [0] - 0.5f, ij [1]       );
+		result [3] = new Vector2 (ij [0]       , ij [1] - 0.5f);
+		return result;
 	}
 //
 //	public void UpdateVelocityFields() {

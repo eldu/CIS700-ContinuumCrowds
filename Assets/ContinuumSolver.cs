@@ -61,12 +61,80 @@ public class ContinuumSolver : MonoBehaviour {
 		// Splat
 		mGrid.splat (agents);
 
-		// Calculate Speed Fields
+		// Calculate Speed Fields and Update Average Velocity
 		mGrid.UpdateVelocityAndCostFields ();
+
+		// Dynamic Potentional Field Construction
+		// Flood Field
+
 	}
 
 	// The farther away the agent is, the more discomforted he may be
 	float getDiscomfort(Agent a, Vector2 position) {
 		return Vector3.Distance (position, a.goal.position);
+	}
+
+
+	void flood(Vector2 start) {
+		int startBound = mGrid.marker.getIdxFromIdx (start);
+
+		// Stack
+		Stack<Vector2> cells = new Stack<Vector2>();
+
+		// First
+		cells.Push (startBound);
+
+
+		while (cells.Count > 0) {
+			// Pop
+			Vector2 idx = cells.Pop ();
+
+			// Unknown
+			if (mGrid.marker.getVal (idx) == 0) {
+				// Do things
+				float mx;
+				float my;
+				
+				// || gradient * potential(x) || = C
+
+
+
+
+				// Push Neighbors
+				cells.Push (new Vector2 (idx [0] + 1, idx [1]));
+				cells.Push (new Vector2 (idx [0], idx [1] + 1));
+				cells.Push (new Vector2 (idx [0] - 1, idx [1]));
+				cells.Push (new Vector2 (idx [0], idx [1] - 1));
+			} // Otherwise known cell, move on.
+		}
+
+	}
+
+
+	void flood(Vector2 idx) {
+		int inBound = mGrid.marker.getIdxFromIdx (idx);
+
+		// Boundary Condition
+		if (inBound < 0) {
+			// Out of bounds
+			return;
+		}
+
+		// Marked?
+		if (mGrid.marker.getVal (inBound)) {
+			// Marked
+			return;
+		}
+
+		// Do things
+
+
+
+
+		// Recursive Calls
+		flood (idx [0] + 1, idx [1]);
+		flood (idx [0], idx [1] + 1);
+		flood (idx [0] - 1, idx [1]);
+		flood (idx [0], idx [1] - 1);
 	}
 }
