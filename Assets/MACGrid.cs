@@ -19,15 +19,18 @@ public class MACGrid : MonoBehaviour {
 
 
 	// Initalize all of the grids
-	Grid2D gridU; // X Velocity Grid
-	Grid2D gridV; // Z Velocity Grid
-	Grid2D gridW;
-	Grid2D gridS;
-	Grid2D gridD; // Density Grid
-	Grid2D gridCU; // Cost in x direction
-	Grid2D gridCV; // Cost in z direction
+//	public Grid2D gridU; // X Velocity Grid
+//	public Grid2D gridV; // Z Velocity Grid
+//	public Grid2D gridW;
+//	public Grid2D gridS;
+	public Grid2D gridPotential;
+	public Grid2D gridD; // Density Grid
+	public Grid2D gridCU; // Cost in x direction
+	public Grid2D gridCV; // Cost in z direction
 	public Grid2D marker; // 0 = empty, 1 = obstacle
-	Grid2D[] gridRose = new Grid2D[4];
+	public Grid2D[] gridRose = new Grid2D[4];
+	public Grid2D[] gridCost = new Grid2D[4];
+
 	Vector2[] n = { new Vector2 (1, 0), new Vector2 (0, 1), new Vector2 (-1, 0), new Vector2 (0, -1) };
 	Vector3[] gridAveVelocity;
 
@@ -79,18 +82,19 @@ public class MACGrid : MonoBehaviour {
 
 	// Clears all of the grids
 	public void clear() {
-		gridU = new Grid2D(resx + 1, resz);
-		gridV = new Grid2D(resx, resz + 1);
-		gridW = new Grid2D (resx, resz);
-		gridS = new Grid2D (resx, resz);
+//		gridU = new Grid2D(resx + 1, resz);
+//		gridV = new Grid2D(resx, resz + 1);
+//		gridW = new Grid2D (resx, resz);
+//		gridS = new Grid2D (resx, resz);
 		gridD = new Grid2D(resx, resz);
 		gridCU = new Grid2D(resx, resz);
 		gridCV = new Grid2D(resx, resz);
 		gridAveVelocity = new Vector3[resx * resz];
-		marker = new Grid2D (resx, resz);
+		gridPotential = new Grid2D (resx, resz);
 
 		for (int i = 0; i < 4; i++) {
-			gridRose [i] = new Grid2D (resx, resz);
+			gridRose [i] = new Grid2D (resx + 1, resz + 1);
+			gridCost [i] = new Grid2D (resx + 1, resz + 1);
 		}
 	}
 
@@ -216,7 +220,7 @@ public class MACGrid : MonoBehaviour {
 					gridRose [i].setVal (ij, fu);
 
 					float cu = (PATH_LENGTH_WEIGHT * fu + TIME_WEIGHT + DISCOMFORT_WEIGHT * distance (directions[k])) / fu;
-					gridRose [i].setVal (ij, cu);
+					gridCost [i].setVal (ij, cu);
 				}
 
 //				Vector2 eij = new Vector2 (i + 0.5f, j);
@@ -333,4 +337,8 @@ public class MACGrid : MonoBehaviour {
 		return Mathf.Sqrt(dx*dx + dy*dy);
 	}
 
+
+	bool isknown(int i, int j) {
+		return Mathf.Equals(marker.getVal (i, j), 1.f); // Known
+	}
 }

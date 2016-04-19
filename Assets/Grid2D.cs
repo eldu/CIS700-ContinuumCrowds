@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -15,7 +16,6 @@ public class Grid2D {
 
 		data = new float[resx * resz];
 	}
-
 
 	// -----------------------------------------------------------------------------
 	// Getters and Setters for Data
@@ -36,6 +36,10 @@ public class Grid2D {
 
 	public void setVal(Vector2 idx, float value) {
 		data [getIdxFromIdx (idx)] = value;
+	}
+
+	public void setVal(int i , int j, float value) {
+		data [getIdxFromIdx (new Vector2 (i, j))] = value;
 	}
 
 	public void addVal(int idx, float value) {
@@ -186,5 +190,10 @@ public class Grid2D {
 
 		// Interpolate on y
 		return a * (1 - dy) + b * dy;
+	}
+
+
+	public void clear() {
+		data = new float[data.Length]
 	}
 }
