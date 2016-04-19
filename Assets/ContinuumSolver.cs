@@ -36,7 +36,6 @@ public class ContinuumSolver : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 		quantity = (int) Mathf.Clamp (quantity, 0, maxNumAgents);
-
 		obstacles = Object.FindObjectsOfType (typeof(Obstacle)) as Obstacle[];
 
 		// Initalize the MAC Grid
@@ -74,6 +73,11 @@ public class ContinuumSolver : MonoBehaviour {
 
 	}
 
+
+	/*
+	 *  NON-STANDARD UNITY FUNCTIONS BELOW
+	 */ 
+
 	// The farther away the agent is, the more discomforted he may be
 	float getDiscomfort(Agent a, Vector2 position) {
 		return Vector3.Distance (position, a.goal.position);
@@ -88,12 +92,10 @@ public class ContinuumSolver : MonoBehaviour {
 		for (int i = goal_minidx [0]; i <= goal_maxidx [1]; i++) {
 			for (int j = goal_minidx [1]; i <= goal_maxidx [1]; i++) {
 				mGrid.marker.setVal (i, j, 1f); // Mark Known
-
-				mGrid.gridCost
+				mGrid.gridPotential.setVal (i, j, 0.f); // Potential at goal is 0.
 			}
 		}
-
-
+			
 		int startBound = mGrid.marker.getIdxFromIdx (start);
 
 		if (startBound < 0) {
@@ -106,7 +108,6 @@ public class ContinuumSolver : MonoBehaviour {
 
 		// First
 		cells.Push (start);
-
 
 		while (cells.Count > 0) {
 			// Pop
@@ -132,32 +133,4 @@ public class ContinuumSolver : MonoBehaviour {
 		}
 
 	}
-
-
-//	void flood(Vector2 idx) {
-//		int inBound = mGrid.marker.getIdxFromIdx (idx);
-//
-//		// Boundary Condition
-//		if (inBound < 0) {
-//			// Out of bounds
-//			return;
-//		}
-//
-//		// Marked?
-//		if (mGrid.marker.getVal (inBound)) {
-//			// Marked
-//			return;
-//		}
-//
-//		// Do things
-//
-//
-//
-//
-//		// Recursive Calls
-//		flood (idx [0] + 1, idx [1]);
-//		flood (idx [0], idx [1] + 1);
-//		flood (idx [0] - 1, idx [1]);
-//		flood (idx [0], idx [1] - 1);
-//	}
 }

@@ -106,7 +106,8 @@ public class MACGrid : MonoBehaviour {
 			// not affected by their own density
 			// lamda is the density falloff
 			// p = (0.5) ^ lambda
-			Vector3 bodyPosition = a.GetComponent<Animator>().bodyPosition;
+
+			Vector3 bodyPosition = a.getWorldPosition();
 			Vector2 localpt = getLocalPoint (new Vector2 (bodyPosition [0], bodyPosition [2]));
 
 			Vector2 Aidx = gridD.getA(localpt);
@@ -153,6 +154,13 @@ public class MACGrid : MonoBehaviour {
 		}
 	}
 
+//	public float getFlowSpeed(Agent a) {
+//		Vector2 localpt = getLocalPoint (a.getWorldPosition ());
+//		int idx = gridD.getIdxFromPos (localpt);
+//
+//		(getDensity(localpt + a.radius / cellWidth) - MIN_DENSITY) / (MAX_DENSITY - MIN_DENSITY) * 
+//	}
+
 	public float getDensity(Vector2 localpt) {
 		int idx = gridD.getIdxFromPos (localpt);
 
@@ -174,27 +182,29 @@ public class MACGrid : MonoBehaviour {
 	}
 
 	// Helper function for UpdateVelocityFields
-	public float getVelocity (Vector2 uij, Vector2 un) {
-		// TODO: world radius = 0.5;
-		float r = 0.5f / resx; // TODO: Currently only support square macgrids
+	public float getVelocity (Agent a) {
+		Vector2 localpt = getLocalPoint (a.getWorldPosition ());
+		int idx = gridD.getIdxFromPos (localpt);
+		float r = a.radius / cellWidth;
+		float n = a.getNormal ();
+		float p = getDensity(localpt);
 
-		float p = getDensity (uij);
-		Vector2 localstep = uij + r * un; // 
-		Vector2 v_xrn = getAverageVelocity (localstep);
-		float p_xrn = getDensity (localstep);
+		Vector2 localstep = localpt + r * n; // 
+		Vector2 density = getDensity (localstep);
+
 		// TODO: Check boundary conditions
-
 		// TODO: Incorporate terrain heightfield
+
 		float fx;
 		float ft = MAX_SPEED; // Topological Speed, Ignore Terrain
-		float fv = Vector2.Dot(v_xrn,  un); // flow speed
+		float fv = Vector2.Dot(getAverageVelocity(localstep), n); // flow speed
 
 		if (p < MIN_DENSITY) {
 			// Low density
 			fx = ft;
 		} else if (p < MAX_DENSITY) {
 			// Middle density
-			fx = ft + (p_xrn - MIN_DENSITY) / (MAX_DENSITY - MIN_DENSITY) * (fv - ft);
+			fx = ft + (density - MIN_DENSITY) / (MAX_DENSITY - MIN_DENSITY) * (fv - ft);
 		} else {
 			// High Density
 			fx = fv;

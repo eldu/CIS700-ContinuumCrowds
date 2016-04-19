@@ -31,6 +31,15 @@ public class Agent : MonoBehaviour {
 	
 	// Update is called once per frame
 	void FixedUpdate () {
-	
+
+	}
+
+	public Vector3 getWorldPosition () {
+		return GetComponent<Animator> ().bodyPosition;
+	}
+
+	public Vector3 getOrientation() {
+		Vector3 orientation  = GetComponent<Animator> ().bodyRotation.eulerAngles;
+		return new Vector2 (orientation.x, orientation.z);
 	}
 }
