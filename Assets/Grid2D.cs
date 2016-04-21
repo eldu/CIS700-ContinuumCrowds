@@ -21,55 +21,59 @@ public class Grid2D {
 	// Getters and Setters for Data
 	// Override operators basically (TODO: Actually override operators)
 	// -----------------------------------------------------------------------------
-	public float getVal(int idx) {
+	public float get(int idx) {
 		return  data[idx];
 	}
 
-	public float getVal(Vector2 index) {
-		int idx = getIdxFromIdxVec2(index);
+	public float get(int i , int j) {
+		return get (new Vector2 (i, j));
+	}
+
+	public float get(Vector2 index) {
+		int idx = convertIdx(index);
 		return  data[idx];
 	}
 
-	public void setVal(int idx, float value) {
+	public void set(int idx, float value) {
 		data [idx] = value;
 	}
 
-	public void setVal(Vector2 idx, float value) {
-		data [getIdxFromIdx (idx)] = value;
+	public void set(Vector2 idx, float value) {
+		data [convertIdx (idx)] = value;
 	}
 
-	public void setVal(int i , int j, float value) {
-		data [getIdxFromIdx (new Vector2 (i, j))] = value;
+	public void set(int i , int j, float value) {
+		data [convertIdx (new Vector2 (i, j))] = value;
 	}
 
-	public void addVal(int idx, float value) {
+	public void add(int idx, float value) {
 		data [idx] += value;
 	}
 
-	public void addVal(Vector2 idx, float value) {
-		data [getIdxFromIdx (idx)] += value;
+	public void add(Vector2 idx, float value) {
+		data [convertIdx (idx)] += value;
+	}
+
+	public void add(int i , int j, float value) {
+		data [convertIdx (i, j)] += value;
 	}
 
 
 	// -----------------------------------------------------------------------------
 	// Indexing Mania (Hash functions)
 	// -----------------------------------------------------------------------------
-	public Vector2 getIdxVec2FromIdx(int idx) {
+	public Vector2 convertIdxtoVec2(int idx) {
 		int i = idx / resx;
 		int j = idx - (i * resx);
 
 		return new Vector2 (i, j);
 	}
 
-	public int getIdxFromIdxVec2(Vector2 idx) {
-		return getIdxFromIdx ((int) idx [0], (int) idx [1]);
+	public int convertIdx(Vector2 idx) {
+		return convertIdx ((int) idx [0], (int) idx [1]);
 	}
 
-	public int getIdxFromIdx(Vector2 idx) {
-		return getIdxFromIdx ((int) idx [0], (int) idx [1]);
-	}
-
-	public int getIdxFromIdx(int i, int j) {
+	public int convertIdx(int i, int j) {
 		// Check if in the range, otherwise return -1
 		if (i < 0 || j < 0 || i >= resx || j >= resz) {
 			return -1;
@@ -79,16 +83,16 @@ public class Grid2D {
 	}
 
 	// Get the index of the grid from a point on the local grid
-	public int getIdxFromPos(Vector2 p) {
-		int i = (int) (p[0] / resx);
-		int j = (int) (p[1] / resz);
+	public int getIdx(Vector2 p) {
+		int i = (int) p[0];
+		int j = (int) p[1];
 
-		return getIdxFromIdx (i, j);
+		return convertIdx (i, j);
 	}
 
-	public Vector2 getIdxVector2FromPos(Vector2 p) {
-		int i = (int) (p[0] / resx);
-		int j = (int) (p[1] / resz);
+	public Vector2 getIdxVec2(Vector2 p) {
+		int i = (int) p[0];
+		int j = (int) p[1];
 
 		return new Vector2 (i, j);
 	}
@@ -100,24 +104,24 @@ public class Grid2D {
 
 	// Get neighbors including itself
 	public List<int> getNeighbors(Vector2 pos) {
-		int idx = getIdxFromPos (pos);
+		int idx = getIdx (pos);
 		return getNeighbors (idx);
 	}
 
 
 	public List<int> getNeighbors(int idx) {
 		List<int> result = new List<int>();
-		Vector2 idxVec2 = getIdxVec2FromIdx(idx);
+		Vector2 idxVec2 = convertIdxtoVec2(idx);
 
 		int i = (int) idxVec2[0];
 		int j = (int) idxVec2[1];
 
 
 		int[] neighbors = new int[4];
-		neighbors[0] = getIdxFromIdx (i, j);
-		neighbors[1] = getIdxFromIdx (i + 1, j);
-		neighbors[2] = getIdxFromIdx (i, j + 1);
-		neighbors[4] = getIdxFromIdx (i + 1, j + 1);
+		neighbors[0] = convertIdx (i, j);
+		neighbors[1] = convertIdx (i + 1, j);
+		neighbors[2] = convertIdx (i, j + 1);
+		neighbors[4] = convertIdx (i + 1, j + 1);
 
 		for (int k = 0; k < 4; k ++) {
 			if (neighbors[k] >= 0) {
@@ -141,7 +145,7 @@ public class Grid2D {
 	// Get the closest bottom left data point
 	// -----------------------------------------------------------------------------
 	public Vector2 getA(Vector2 p) {
-		Vector2 idx = getIdxVector2FromPos (p);
+		Vector2 idx = getIdxVec2 (p);
 		Vector2 c1 = getCoordVector2(idx);
 
 		if (p [0] >= c1 [0]) {
@@ -179,10 +183,10 @@ public class Grid2D {
 		float dx = pos [0] - Acoord [0];
 		float dy = pos [1] - Acoord [1];
 
-		float c00 = getVal(Aidx);
-		float c01 = getVal(Bidx);
-		float c10 = getVal(Didx);
-		float c11 = getVal(Cidx);
+		float c00 = get(Aidx);
+		float c01 = get(Bidx);
+		float c10 = get(Didx);
+		float c11 = get(Cidx);
 
 		// Interpolate on x
 		float a = c00 * (1 - dx) + c10 * dx;
@@ -194,6 +198,6 @@ public class Grid2D {
 
 
 	public void clear() {
-		data = new float[data.Length]
+		data = new float[data.Length];
 	}
 }

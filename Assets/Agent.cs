@@ -38,8 +38,8 @@ public class Agent : MonoBehaviour {
 		return GetComponent<Animator> ().bodyPosition;
 	}
 
-	public Vector3 getOrientation() {
-		Vector3 orientation  = GetComponent<Animator> ().bodyRotation.eulerAngles;
-		return new Vector2 (orientation.x, orientation.z);
+	public Vector2 getNormal() {
+		Vector3 orientation = GetComponent<Animator> ().bodyRotation.eulerAngles;
+		return new Vector2 (Mathf.Cos (orientation.y), Mathf.Sin (orientation.y));
 	}
 }

@@ -154,13 +154,6 @@ public class MACGrid : MonoBehaviour {
 		}
 	}
 
-//	public float getFlowSpeed(Agent a) {
-//		Vector2 localpt = getLocalPoint (a.getWorldPosition ());
-//		int idx = gridD.getIdxFromPos (localpt);
-//
-//		(getDensity(localpt + a.radius / cellWidth) - MIN_DENSITY) / (MAX_DENSITY - MIN_DENSITY) * 
-//	}
-
 	public float getDensity(Vector2 localpt) {
 		int idx = gridD.getIdxFromPos (localpt);
 
@@ -186,11 +179,11 @@ public class MACGrid : MonoBehaviour {
 		Vector2 localpt = getLocalPoint (a.getWorldPosition ());
 		int idx = gridD.getIdxFromPos (localpt);
 		float r = a.radius / cellWidth;
-		float n = a.getNormal ();
+		Vector2 n = a.getNormal ();
 		float p = getDensity(localpt);
 
 		Vector2 localstep = localpt + r * n; // 
-		Vector2 density = getDensity (localstep);
+		float density = getDensity (localstep);
 
 		// TODO: Check boundary conditions
 		// TODO: Incorporate terrain heightfield
@@ -227,10 +220,10 @@ public class MACGrid : MonoBehaviour {
 
 				for (int k = 0; k < 4; k++) {
 					float fu = getVelocity (directions [k], n [k]);
-					gridRose [i].setVal (ij, fu);
+					gridRose [k].setVal (ij, fu);
 
 					float cu = (PATH_LENGTH_WEIGHT * fu + TIME_WEIGHT + DISCOMFORT_WEIGHT * distance (directions[k])) / fu;
-					gridCost [i].setVal (ij, cu);
+					gridCost [k].setVal (ij, cu);
 				}
 
 //				Vector2 eij = new Vector2 (i + 0.5f, j);
@@ -263,10 +256,11 @@ public class MACGrid : MonoBehaviour {
 
 	Vector2[] getDirections(Vector2 ij) {
 		Vector2[] result = new Vector2[4];
-		result [0] = new Vector2 (ij [0] + 0.5f, ij [1]       );
-		result [1] = new Vector2 (ij [0]       , ij [1] + 0.5f);
-		result [2] = new Vector2 (ij [0] - 0.5f, ij [1]       );
-		result [3] = new Vector2 (ij [0]       , ij [1] - 0.5f);
+		// Counterclockwise
+		result [0] = new Vector2 (ij [0] + 0.5f, ij [1]       ); // East
+		result [1] = new Vector2 (ij [0]       , ij [1] + 0.5f); // North
+		result [2] = new Vector2 (ij [0] - 0.5f, ij [1]       ); // West
+		result [3] = new Vector2 (ij [0]       , ij [1] - 0.5f); // South
 		return result;
 	}
 //
@@ -349,6 +343,10 @@ public class MACGrid : MonoBehaviour {
 
 
 	bool isknown(int i, int j) {
-		return Mathf.Equals(marker.getVal (i, j), 1.f); // Known
+		return Mathf.Equals(marker.getVal (i, j), 1); // Known
 	}
+
+
+
+
 }
