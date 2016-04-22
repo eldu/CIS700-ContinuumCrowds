@@ -58,6 +58,17 @@ public class Grid2D {
 		data [convertIdx (i, j)] += value;
 	}
 
+	public void divide(int idx, float value) {
+		data [idx] /= value;
+	}
+
+	public void divide(Vector2 idx, float value) {
+		data [convertIdx (idx)] /= value;
+	}
+
+	public void divide(int i , int j, float value) {
+		data [convertIdx (i, j)] /= value;
+	}
 
 	// -----------------------------------------------------------------------------
 	// Indexing Mania (Hash functions)
