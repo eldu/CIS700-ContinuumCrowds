@@ -77,6 +77,7 @@ public class ContinuumSolver : MonoBehaviour {
 		// Construct Unit Cost Field
 		// Calculate Speed Fields and Update Average Velocity
 		mGrid.UpdateVelocityAndCostFields ();
+
 		// Dynamic Potentional Field Construction
 
 
@@ -103,17 +104,17 @@ public class ContinuumSolver : MonoBehaviour {
 	void floodfill() {
 
 		// Set goal potential
-		int goal_minx = (int) mGrid.marker.getIdxVector2FromPos (goal_min).x;
-		int goal_miny = (int) mGrid.marker.getIdxVector2FromPos (goal_min).y;
-		int goal_maxx = (int) mGrid.marker.getIdxVector2FromPos (goal_max).x;
-		int goal_maxy = (int) mGrid.marker.getIdxVector2FromPos (goal_max).y;
+		int goal_minx = (int) mGrid.marker.getIdxVec2 (goal_min).x;
+		int goal_miny = (int) mGrid.marker.getIdxVec2 (goal_min).y;
+		int goal_maxx = (int) mGrid.marker.getIdxVec2 (goal_max).x;
+		int goal_maxy = (int) mGrid.marker.getIdxVec2 (goal_max).y;
 
 		for (int i = 0; i < resi; i++) {
 			for (int j = 0; j < resj; j++) {
 				if (isWithinBounds (goal_minx, goal_miny, goal_maxx, goal_maxy, i, j)) {
-					mGrid.gridPotential.setVal (i, j, 0);
+					mGrid.gridPotential.set (i, j, 0);
 				} else {
-					mGrid.gridPotential.setVal (i, j, Mathf.Infinity);
+					mGrid.gridPotential.set (i, j, Mathf.Infinity);
 				}
 			}
 		}
@@ -154,20 +155,74 @@ public class ContinuumSolver : MonoBehaviour {
 
 		// Main Loop
 		while (cells.Count > 0) { // While not empty
-			// Pop
-			Vector2 idx = cells.Pop();
+//			// Pop
+//			Vector2 idx = cells.Pop();
+//			int i = (int) idx [0];
+//			int j = (int) idx [1];
+
+
+
+			// Get Candidate with Minimal Potential
+			float minPotential = mGrid.gridPotential.get(cells.Peek());
+			Vector2 idx = cells.Peek(); // TODO: Remove default value
+
+			foreach (Vector2 c in cells) {
+				float cand = mGrid.gridPotential.get (c);
+				if (cand < minPotential) {
+					idx = c;
+					minPotential = cand;
+				}
+			}
+
 			int i = (int) idx [0];
 			int j = (int) idx [1];
+			mGrid.marker.set(idx, KNOWN); // Set known
 
-			// Minimum
-			float minCost = Mathf.Infinity;
-			Vector2 minNeigh;
 
 			// Get Neighbors
-			List<int> neighbors = getNeighbors(i, j);
+			Vector2[] neighbors = mGrid.gridPotential.getFaceNeighbors(i, j);
+			float mx, my;
+			int x, y;
 
 
+			if (mGrid.gridPotential.get (neighbors [0]) + mGrid.gridCost [0].get (neighbors [0]) <
+				mGrid.gridPotential.get (neighbors [2]) + mGrid.gridCost [2].get (neighbors [2])) {
+				mx = mGrid.gridPotential.get (neighbors [0]) + mGrid.gridCost [0].get (neighbors [0]);
+				x = 0;
+			} else {
+				mx = mGrid.gridPotential.get (neighbors [2]) + mGrid.gridCost [2].get (neighbors [2]);
+				x = 2;
+			}
 
+			if (mGrid.gridPotential.get (neighbors [1]) + mGrid.gridCost [1].get (neighbors [1]) <
+			    mGrid.gridPotential.get (neighbors [3]) + mGrid.gridCost [3].get (neighbors [3])) {
+				my = mGrid.gridPotential.get (neighbors [1]) + mGrid.gridCost [1].get (neighbors [1]);
+				y = 1;
+			} else {
+				my = mGrid.gridPotential.get (neighbors [3]) + mGrid.gridCost [3].get (neighbors [3]);
+				y = 3;
+			}
+				
+			// Wolfram Alpha Check
+			float b = mGrid.gridCost [x].get (neighbors [x]);
+			float d = mGrid.gridCost [y].get (neighbors [y]);
+			float M = 0;
+			if (mx >= Mathf.Infinity - 100 && my >= Mathf.Infinity) {
+				// Both are infinity, shouldn't happen.
+				print ("mx and my are both infinity");
+			} else if (mx >= Mathf.Infinity - 100) {
+				M = mx - d;
+			} else if (my >= Mathf.Infinity - 100) {
+				M = my - d;
+			} else {
+				M = Mathf.Sqrt (b * b * d * d * (-mx * mx + 2 * mx * my + b * b - my * my + d * d)) + mx * d * d + b * b * my;
+				M /= b * b + d * d;
+			}
+
+			mGrid.gridPotential.set (i, j, M); // Set potential at this point
+
+
+			// Add all neighbors to the queue if unknown
 
 		}
 
@@ -179,24 +234,6 @@ public class ContinuumSolver : MonoBehaviour {
 	float getCost(int from, int to) {
 		
 		return 0;
-	}
-
-	List<int> getNeighbors(int i, int j) {
-		List<int> result = new List<int> ();;
-		int[] neighbors = new int[4];
-
-		neighbors[0] = mGrid.gridPotential.getIdxFromIdx (i + 1, j);
-		neighbors[1] = mGrid.gridPotential.getIdxFromIdx (i - 1, j);
-		neighbors[2] = mGrid.gridPotential.getIdxFromIdx (i, j + 1);
-		neighbors[3] = mGrid.gridPotential.getIdxFromIdx (i, j - 1);
-
-		for (int n = 0; n < 4; n++) {
-			if (neighbors [n] >= 0 && neighbors [n] < mGrid.gridPotential.data.Length) { // In bounds
-				result.Add(neighbors[n]);
-			}
-		}
-
-		return result;
 	}
 
 

@@ -129,10 +129,10 @@ public class Grid2D {
 
 
 		int[] neighbors = new int[4];
-		neighbors[0] = convertIdx (i, j);
-		neighbors[1] = convertIdx (i + 1, j);
-		neighbors[2] = convertIdx (i, j + 1);
-		neighbors[4] = convertIdx (i + 1, j + 1);
+		neighbors[0] = convertIdx (i + 1, j);
+		neighbors[1] = convertIdx (i, j + 1);
+		neighbors[2] = convertIdx (i - 1, j);
+		neighbors[3] = convertIdx (i, j - 1);
 
 		for (int k = 0; k < 4; k ++) {
 			if (neighbors[k] >= 0) {
@@ -143,6 +143,20 @@ public class Grid2D {
 
 	}
 
+	public Vector2[] getFaceNeighbors(int i, int j) {
+		Vector2[] neighbors = new Vector2[4];
+		neighbors[0] = new Vector2 (i + 1, j);
+		neighbors[1] = new Vector2 (i, j + 1);
+		neighbors[2] = new Vector2 (i - 1, j);
+		neighbors[3] = new Vector2 (i, j - 1);
+
+		return neighbors;
+	}
+
+
+	public bool isValid(Vector2 idx) {
+		return idx [0] >= 0 && idx [0] < resx && idx [1] >= 0 && idx [1] < resz;
+	}
 
 	// -----------------------------------------------------------------------------
 	// Get Cooridnate Positions
