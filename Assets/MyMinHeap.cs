@@ -53,7 +53,7 @@ public class MyMinHeap {
 				j++;
 			}
 
-			if (compare (items [k], compare [j]) < 0) {
+			if (compare (items[k], items[j]) >= 0) {
 				break;
 			}
 
@@ -70,7 +70,7 @@ public class MyMinHeap {
 	}
 
 	public void swap(int a, int b) {
-		int temp = items [a];
+		Vector2 temp = items [a];
 		items [a] = items [b];
 		items [b] = temp;
 	}
@@ -78,7 +78,7 @@ public class MyMinHeap {
 
 	// Compare based on potentials
 	public float compare(Vector2 a, Vector2 b) {
-		return g.gridPotential.get (a [0], a [1])  - g.gridPotential.get(b[0], b[1]);
+		return g.gridPotential.get (a)  - g.gridPotential.get(b);
 	}
 }
 

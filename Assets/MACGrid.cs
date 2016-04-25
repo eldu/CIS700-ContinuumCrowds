@@ -34,13 +34,14 @@ public class MACGrid : MonoBehaviour {
 	public Vector2[] gridAverageVelocity;
 
 	// Cardinal Directions
-	Vector2[] n = { new Vector2 (1, 0), new Vector2 (0, 1), new Vector2 (-1, 0), new Vector2 (0, -1) };
+	Vector2[] n = { new Vector2 (1, 0), new Vector2 (0, 1)};
+//		, new Vector2 (-1, 0), new Vector2 (0, -1) };
 
 
 //	Vector3[] gridAveVelocity;
 
 	// Tinkering Parameters
-	private float lamda = 2.0f; // Density
+	public float lamda = 2.0f; // Density
 
 	public float MAX_SPEED = 2.5f; // m/s
 	public float MIN_SPEED = 0.5f; // m/s
@@ -88,13 +89,18 @@ public class MACGrid : MonoBehaviour {
 		//		gridCV = new Grid2D(resx, resz);
 		gridAverageVelocity = new Vector2[resx * resz];
 		gridPotential = new Grid2D (resx, resz);
+
 		gradU = new Grid2D (resx + 1, resz);
 		gradV = new Grid2D (resx, resz + 1);
 
-		for (int i = 0; i < 4; i++) {
-			gridRose [i] = new Grid2D (resx + 1, resz + 1);
-			gridCost [i] = new Grid2D (resx + 1, resz + 1);
-		}
+
+		// TODO: Change gridRose and gridCost
+//		for (int i = 0; i < 2; i++) {
+			gridRose [0] = new Grid2D (resx + 1, resz);
+			gridCost [0] = new Grid2D (resx + 1, resz);
+			gridRose [0] = new Grid2D (resx, resz + 1);
+			gridCost [0] = new Grid2D (resx, resz + 1);
+//		}
 	}
 
 	public Vector2 getLocalPoint(Vector2 world) {
@@ -154,23 +160,23 @@ public class MACGrid : MonoBehaviour {
 				float p = Mathf.Pow (Mathf.Min (1 - dx, 1 - dy), lamda);
 				gridD.add(A, p);
 
-				gridAverageVelocity[A] += Vector2 (a.GetComponent<CharacterController> ().velocity.x / p, a.GetComponent<CharacterController> ().velocity.y / p);
+				gridAverageVelocity[A] += new Vector2 (a.GetComponent<CharacterController> ().velocity.x / p, a.GetComponent<CharacterController> ().velocity.y / p);
 
 			}
 			if (B > 0) {
 				float p = Mathf.Pow (Mathf.Min (dx, 1 - dy), lamda);
 				gridD.add(B, p);
-				gridAverageVelocity[B] += Vector2 (a.GetComponent<CharacterController> ().velocity.x / p, a.GetComponent<CharacterController> ().velocity.y / p);
+				gridAverageVelocity[B] += new Vector2 (a.GetComponent<CharacterController> ().velocity.x / p, a.GetComponent<CharacterController> ().velocity.y / p);
 			}
 			if (C > 0) {
 				float p = Mathf.Pow (Mathf.Min (dx, dy), lamda);
 				gridD.add(C, p);
-				gridAverageVelocity[C] += Vector2 (a.GetComponent<CharacterController> ().velocity.x / p, a.GetComponent<CharacterController> ().velocity.y / p);
+				gridAverageVelocity[C] += new Vector2 (a.GetComponent<CharacterController> ().velocity.x / p, a.GetComponent<CharacterController> ().velocity.y / p);
 			}
 			if (D > 0) {
 				float p = Mathf.Pow (Mathf.Min (1 - dx, dy), lamda);
 				gridD.add(D, p);
-				gridAverageVelocity[D] += Vector2 (a.GetComponent<CharacterController> ().velocity.x / p, a.GetComponent<CharacterController> ().velocity.y / p);
+				gridAverageVelocity[D] += new Vector2 (a.GetComponent<CharacterController> ().velocity.x / p, a.GetComponent<CharacterController> ().velocity.y / p);
 			}
 
 			// Divide the speed by the density
@@ -245,7 +251,7 @@ public class MACGrid : MonoBehaviour {
 				Vector2 ij = new Vector2 (i, j);
 				Vector2[] directions = getDirections (ij);
 
-				for (int k = 0; k < 4; k++) {
+				for (int k = 0; k < directions.Length; k++) {
 					// fm --> i
 					float fu = getSpeed (directions [k], n [k]); 
 					gridRose [k].set (ij, fu); // 
@@ -284,72 +290,14 @@ public class MACGrid : MonoBehaviour {
 	}
 
 	Vector2[] getDirections(Vector2 ij) {
-		Vector2[] result = new Vector2[4];
+		Vector2[] result = new Vector2[2];
 		// Counterclockwise
 		result [0] = new Vector2 (ij [0] + 0.5f, ij [1]       ); // East
 		result [1] = new Vector2 (ij [0]       , ij [1] + 0.5f); // North
-		result [2] = new Vector2 (ij [0] - 0.5f, ij [1]       ); // West
-		result [3] = new Vector2 (ij [0]       , ij [1] - 0.5f); // South
+//		result [2] = new Vector2 (ij [0] - 0.5f, ij [1]       ); // West
+//		result [3] = new Vector2 (ij [0]       , ij [1] - 0.5f); // South
 		return result;
 	}
-//
-//	public void UpdateVelocityFields() {
-//		for (int i = 0; i < resx; i++) {
-//			for (int j = 0; j < resz; j++) {
-//				// TODO: world radius = 0.5;
-//				float r = 0.5f / resx; // TODO: Currently only support square macgrids
-//
-//				// Location of u
-//				Vector2 uij = new Vector2 (i + 0.5f, j);
-//				Vector2 un = new Vector2 (1, 0);
-//
-//				float p = getDensity (uij);
-//				Vector2 localstep = uij + r * un;
-//				Vector2 v_xrn = getAverageVelocity (localstep);
-//				float p_xrn = getDensity (localstep);
-//
-//				// TODO: Incorporate terrain heightfield
-//				float fx;
-//				float ft = MAX_SPEED; // Topological Speed, Ignore Terrain
-//				float fv = Vector2.Dot(v_xrn,  un); // flow speed
-//
-//				if (p < MIN_DENSITY) {
-//					// Low density
-//					fx = ft;
-//				} else if (p < MAX_DENSITY) {
-//					// Middle density
-//					fx = ft + (p_xrn - MIN_DENSITY) / (MAX_DENSITY - MIN_DENSITY) * (fv - ft);
-//				} else {
-//					// High Density
-//					fx = fv;
-//				}
-//
-//				gridU.setVal (uij, fx);
-//					
-//				// Location of v
-//				Vector2 vij = new Vector2 (i, j + 0.5f);
-//				Vector2 vn = new Vector2 (0f, 1f);
-//
-//				p = getDensity (vij);
-//				localstep = vij + r * vn;
-//				v_xrn = getAverageVelocity (localstep);
-//				p_xrn = getDensity (localstep);
-//
-//				fv = Vector2.Dot(v_xrn,  vn); // flow speed
-//
-//				if (p < MIN_DENSITY) {
-//					// Low density
-//					gridV.setVal(uij, ft);
-//				} else if (p < MAX_DENSITY) {
-//					// Middle density
-//					gridV.setVal(uij, ft + (p_xrn - MIN_DENSITY) / (MAX_DENSITY - MIN_DENSITY) * (fv - ft));
-//				} else {
-//					// High Density
-//					gridV.setVal(uij, fv);
-//				}
-//			}
-//		}
-//	}
 
 	// Discomfort From Goal From Any Point
 	// Local point

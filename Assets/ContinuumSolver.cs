@@ -85,7 +85,23 @@ public class ContinuumSolver : MonoBehaviour {
 
 		// Advect
 		foreach (Agent a in agents) {
-			
+			Vector2 localpt = mGrid.getLocalPoint (a.getWorldPosition ());
+			int Uidx = mGrid.gridRose [0].getIdx (localpt);
+//			float Uvelocity = mGrid.gridRose [0].get (Uidx);
+
+			int Vidx = mGrid.gridRose [1].getIdx (localpt);
+//			float Vvelocity = mGrid.gridRose [1].get (Uidx);
+
+			float Upotential = mGrid.gradU.get (Uidx);
+			float Vpotential = mGrid.gradV.get (Vidx);
+
+//			Vector2 flowspeed = new Vector2 (Uvelocity, Vvelocity);
+			float flowspeed = mGrid.getSpeed(localpt, a.getNormal());
+			Vector2 potential = new Vector2 (Upotential, Vpotential);
+
+			Vector2 result = -1 * flowspeed * potential.normalized;
+
+			a.setVelocity (result);
 		}
 	}
 
@@ -104,6 +120,8 @@ public class ContinuumSolver : MonoBehaviour {
 	bool isWithinBounds(int bound_minx, int bound_miny, int bound_maxx, int bound_maxy, int i, int j) {
 		return i >= bound_minx && i <= bound_maxx && j >= bound_miny && j <= bound_maxy;
 	}
+
+
 
 
 	void constructPotentialField() {
@@ -220,6 +238,32 @@ public class ContinuumSolver : MonoBehaviour {
 	}
 
 	void constructGradientPotential() {
-		
+		// grad U
+		for (int i = 0; i < resi - 1; i++) {
+			for (int j = 0; j < resj; j++) {
+				float curr = mGrid.gridPotential.get (i, j);
+				float next = mGrid.gridPotential.get (i + 1, j);
+				mGrid.gradU.set (i, j, next - curr);
+			}
+		}
+
+		// Boundary
+		for (int j = 0; j < resj; j++) {
+//			float curr = mGrid.gridPotential.get (resi - 1);
+			mGrid.gradU.set (resi - 1, j, Mathf.Infinity);
+		}
+
+		for (int i = 0; i < resi; i++) {
+			mGrid.gradV.set (i, resj - 1, Mathf.Infinity);
+		}
+
+		// Grad v
+		for (int i = resi; i < resi; i++) {
+			for (int j = resj; j < resj; j++) {
+				float curr = mGrid.gridPotential.get (i, j);
+				float next = mGrid.gridPotential.get (i, j + 1);
+				mGrid.gradV.set (i, j, next - curr);
+			}
+		}
 	}
 }
