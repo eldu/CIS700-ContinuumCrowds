@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using Systen.Collections;
+using System.Collections;
 using UnityEngine;
 
 public class MyMinHeap {
@@ -32,26 +32,18 @@ public class MyMinHeap {
 
 	public Vector2 removeMin() {
 		if (items.Count == 0) {
-			throw new System.InvalidOperationExcpetion ("Empty Heap");
+			throw new System.InvalidOperationException ("Empty Heap");
 		}
 
 		Vector2 min = items [0];
 
 		// Swap with Last Item
 		Vector2 temp = items[items.Count - 1];
+		items [0] = temp;
 		items.RemoveAt (items.Count - 1);
+		sink (0);
 
-//		if (items.Count > 0) { // Not empty
-//			int i = 0;
-//			while (i < items.Count / 2) {
-//				int j = 2 * i + 1;
-//				if ((j < items.Count - 1 && compare(items[j], items[j + 1] > 0) {
-//				}
-//			}
-//		}
-
-
-		// Sink
+		return min;
 	}
 		
 	public void sink(int k) {
