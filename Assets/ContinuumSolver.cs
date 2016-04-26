@@ -7,6 +7,11 @@ public class ContinuumSolver : MonoBehaviour {
 	private static int KNOWN = 1;
 	private static int UNKNOWN = 0;
 
+	// Set up colorer
+	private MeshColorer mc;
+	private Mesh m;
+	private MeshFilter mf;
+
 	// Set up agents
 	public GameObject original_agent;
 	private Agent[] agents;
@@ -15,17 +20,17 @@ public class ContinuumSolver : MonoBehaviour {
 
 	// Set up goal
 	public GameObject goal;
-	Vector3 goal_min;
-	Vector3 goal_max;
+	private Vector2 goal_min;
+	private Vector2 goal_max;
 
 	// Set up obstacles
-	public Obstacle[] obstacles;
+//	public Obstacle[] obstacles;
 
-	public Vector3 min = new Vector2(-5, -5); // Bottom left corner
-	public Vector3 max = new Vector2(5, 5); // Top right corner
-	public Vector2 resolution = new Vector2(5, 5);
-	public int resi = 5;
-	public int resj = 5;
+	private Vector2 min = new Vector2(-50, -50); // Bottom left corner
+	private Vector2 max = new Vector2(50, 50); // Top right corner
+	private Vector2 resolution = new Vector2(20, 20);
+	private int resi = 20;
+	private int resj = 20;
 
 
 	private MACGrid mGrid;
@@ -42,10 +47,39 @@ public class ContinuumSolver : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 		quantity = (int) Mathf.Clamp (quantity, 0, maxNumAgents);
-		obstacles = Object.FindObjectsOfType (typeof(Obstacle)) as Obstacle[];
+//		obstacles = Object.FindObjectsOfType (typeof(Obstacle)) as Obstacle[];
 
 		// Initalize the MAC Grid
 		mGrid = new MACGrid(min, max, resolution, goal.GetComponent<BoxCollider>());
+
+//		mc = GetComponent<MeshColorer> ();
+//		Vector3[] vertices = new Vector3[resi * resj];
+//		for (int i = 0; i < resi; i++) {
+//			for (int j = 0; j < resj; j++) {
+//				vertices [i * resi + j] = new Vector3 ((i + 0.5F) * mGrid.cellWidth, 0, (j + 0.5F) * mGrid.cellWidth);
+//			}
+//		}
+//		mc.mesh.vertices = newMesh;
+
+		int vertexCount = resi * resj;
+		Vector3[] vertices = new Vector3[resi * resj];
+		int[] indices = new int[vertexCount];
+		for (int i = 0; i < resi; i++) {
+			for (int j = 0; j < resj; j++) {
+				vertices [i * resi + j] = new Vector3 ((i + 0.5F) * mGrid.cellWidth, 0, (j + 0.5F) * mGrid.cellWidth);
+				indices [i * resi + j] = i * resi + j;
+			}
+		}
+
+		m = new Mesh();
+		m.vertices = vertices;
+		m.SetIndices(indices, MeshTopology.Points, 0);
+		m.RecalculateBounds();
+
+//		mf = GetComponent<MeshFilter>();
+//		mf.mesh = m;
+//		mf.mesh.colors = new Color[resi * resj];
+
 
 		// Set Goals
 		goal_min = mGrid.getLocalPoint(goal.GetComponent<BoxCollider>().center - 0.5f * goal.GetComponent<BoxCollider>().size);
@@ -61,6 +95,7 @@ public class ContinuumSolver : MonoBehaviour {
 			GameObject temp = (GameObject)Instantiate (original_agent, new Vector3 (i * 2.0f, 0, 0), Quaternion.identity);
 			agents [i] = temp.GetComponent<Agent> ();
 		}
+
 	}
 
 	// Update is called once per frame
@@ -72,6 +107,15 @@ public class ContinuumSolver : MonoBehaviour {
 		// Splat Density
 		// Average velocity
 		mGrid.splat (agents);
+
+//		// Color density
+//		for (int c = 0; c < resi * resj; c++) {
+//			// local point
+//			Vector2 lp = mGrid.getLocalPoint(mf.mesh.vertices[c]);
+//			float density = mGrid.getDensity (lp);
+//
+//			mf.mesh.colors [c] = new Color (0, 1, density, 1);
+//		}
 
 		// For each group
 		// Construct Unit Cost Field

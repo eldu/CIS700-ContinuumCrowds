@@ -7,10 +7,10 @@ public class MACGrid : MonoBehaviour {
 	public Vector2 max;
 	public Vector2 resolution;
 
-	int resx;
-	int resz;
+	private int resx;
+	private int resz;
 
-	float cellWidth;
+	public float cellWidth;
 
 	// Goal
 	public BoxCollider box;
@@ -27,8 +27,8 @@ public class MACGrid : MonoBehaviour {
 //	public Grid2D gridCU; // Cost in x direction
 //	public Grid2D gridCV; // Cost in z direction
 	public Grid2D marker; // 0 = empty, 1 = obstacle
-	public Grid2D[] gridRose = new Grid2D[4]; // Velocity
-	public Grid2D[] gridCost = new Grid2D[4]; 
+	public Grid2D[] gridRose = new Grid2D[2]; // Velocity
+	public Grid2D[] gridCost = new Grid2D[2]; 
 	public Grid2D gradU;
 	public Grid2D gradV;
 	public Vector2[] gridAverageVelocity;
@@ -103,8 +103,10 @@ public class MACGrid : MonoBehaviour {
 //		}
 	}
 
-	public Vector2 getLocalPoint(Vector2 world) {
-		return (world - min) / cellWidth;
+	public Vector2 getLocalPoint(Vector3 world) {
+		float x = (world.x - min.x) / cellWidth;
+		float y = (world.z - min.y) / cellWidth;
+		return new Vector2 (x, y);
 	}
 
 	// Clears all of the grids
@@ -123,9 +125,11 @@ public class MACGrid : MonoBehaviour {
 
 		gridPotential = new Grid2D (resx, resz);
 
-		for (int i = 0; i < 4; i++) {
-			gridRose [i] = new Grid2D (resx + 1, resz + 1);
-			gridCost [i] = new Grid2D (resx + 1, resz + 1);
+		for (int i = 0; i < 2; i++) {
+			gridRose [0] = new Grid2D (resx + 1, resz);
+			gridCost [0] = new Grid2D (resx + 1, resz);
+			gridRose [1] = new Grid2D (resx, resz + 1);
+			gridCost [1] = new Grid2D (resx, resz + 1);
 		}
 	}
 

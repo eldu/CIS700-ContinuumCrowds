@@ -16,7 +16,7 @@ public class Agent : MonoBehaviour {
 	public float STOPPING_DISTANCE = 0.0f; // Stop within this distance form the target position
 	public bool autoBraking = true;
 
-	private Vector3 destination;
+//	private Vector3 destination;
 //	private float densityExponent = 2.0f; // lamda, speed of density falloff
 
 
@@ -27,7 +27,7 @@ public class Agent : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-		destination = goal.position;
+//		destination = goal.position;
 	}
 	
 	// Update is called once per frame

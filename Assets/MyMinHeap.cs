@@ -81,4 +81,3 @@ public class MyMinHeap {
 		return g.gridPotential.get (a)  - g.gridPotential.get(b);
 	}
 }
-
