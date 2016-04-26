@@ -76,9 +76,9 @@ public class ContinuumSolver : MonoBehaviour {
 		m.SetIndices(indices, MeshTopology.Points, 0);
 		m.RecalculateBounds();
 
-//		mf = GetComponent<MeshFilter>();
-//		mf.mesh = m;
-//		mf.mesh.colors = new Color[resi * resj];
+		mf = GetComponent<MeshFilter>();
+		mf.mesh = m;
+		mf.mesh.colors = new Color[resi * resj];
 
 
 		// Set Goals
@@ -92,7 +92,7 @@ public class ContinuumSolver : MonoBehaviour {
 		agents = new Agent[quantity];
 		agents [0] = original_agent.GetComponent<Agent> ();
 		for (int i = 1; i < quantity; i++) {
-			GameObject temp = (GameObject)Instantiate (original_agent, new Vector3 (i * 2.0f, 0, 0), Quaternion.identity);
+			GameObject temp = (GameObject) Instantiate (original_agent, new Vector3 (i * 2.0f, 0, 0), Quaternion.identity);
 			agents [i] = temp.GetComponent<Agent> ();
 		}
 
@@ -108,14 +108,14 @@ public class ContinuumSolver : MonoBehaviour {
 		// Average velocity
 		mGrid.splat (agents);
 
-//		// Color density
-//		for (int c = 0; c < resi * resj; c++) {
-//			// local point
-//			Vector2 lp = mGrid.getLocalPoint(mf.mesh.vertices[c]);
-//			float density = mGrid.getDensity (lp);
-//
-//			mf.mesh.colors [c] = new Color (0, 1, density, 1);
-//		}
+		// Color density
+		for (int c = 0; c < resi * resj; c++) {
+			// local point
+			Vector2 lp = mGrid.getLocalPoint(mf.mesh.vertices[c]);
+			float density = mGrid.getDensity (lp);
+
+			mf.mesh.colors [c] = new Color (0, 1, density, 1);
+		}
 
 		// For each group
 		// Construct Unit Cost Field
@@ -123,30 +123,30 @@ public class ContinuumSolver : MonoBehaviour {
 		mGrid.UpdateVelocityAndCostFields ();
 
 		// Dynamic Potentional Field Construction
-		constructPotentialField();
+//		constructPotentialField();
 
 		// Boundary Conditions
 
 		// Advect
-		foreach (Agent a in agents) {
-			Vector2 localpt = mGrid.getLocalPoint (a.getWorldPosition ());
-			int Uidx = mGrid.gridRose [0].getIdx (localpt);
-//			float Uvelocity = mGrid.gridRose [0].get (Uidx);
-
-			int Vidx = mGrid.gridRose [1].getIdx (localpt);
-//			float Vvelocity = mGrid.gridRose [1].get (Uidx);
-
-			float Upotential = mGrid.gradU.get (Uidx);
-			float Vpotential = mGrid.gradV.get (Vidx);
-
-//			Vector2 flowspeed = new Vector2 (Uvelocity, Vvelocity);
-			float flowspeed = mGrid.getSpeed(localpt, a.getNormal());
-			Vector2 potential = new Vector2 (Upotential, Vpotential);
-
-			Vector2 result = -1 * flowspeed * potential.normalized;
-
-			a.setVelocity (result);
-		}
+//		foreach (Agent a in agents) {
+//			Vector2 localpt = mGrid.getLocalPoint (a.getWorldPosition ());
+//			int Uidx = mGrid.gridRose [0].getIdx (localpt);
+////			float Uvelocity = mGrid.gridRose [0].get (Uidx);
+//
+//			int Vidx = mGrid.gridRose [1].getIdx (localpt);
+////			float Vvelocity = mGrid.gridRose [1].get (Uidx);
+//
+//			float Upotential = mGrid.gradU.get (Uidx);
+//			float Vpotential = mGrid.gradV.get (Vidx);
+//
+////			Vector2 flowspeed = new Vector2 (Uvelocity, Vvelocity);
+//			float flowspeed = mGrid.getSpeed(localpt, a.getNormal());
+//			Vector2 potential = new Vector2 (Upotential, Vpotential);
+//
+//			Vector2 result = -1 * flowspeed * potential.normalized;
+//
+//			a.setVelocity (result);
+//		}
 	}
 
 

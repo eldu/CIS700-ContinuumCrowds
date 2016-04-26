@@ -2,7 +2,7 @@
 using System.Collections;
 
 
-public class MACGrid : MonoBehaviour {
+public class MACGrid {
 	public Vector2 min;
 	public Vector2 max;
 	public Vector2 resolution;
