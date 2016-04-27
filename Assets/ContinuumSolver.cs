@@ -3,9 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 
 public class ContinuumSolver : MonoBehaviour {
-	// private static variables
-	private static int KNOWN = 1;
-	private static int UNKNOWN = 0;
+//	// private static variables
+//	private static int KNOWN = 1;
+//	private static int UNKNOWN = 0;
 
 	// Set up colorer
 	private MeshColorer mc;
@@ -52,33 +52,37 @@ public class ContinuumSolver : MonoBehaviour {
 		// Initalize the MAC Grid
 		mGrid = new MACGrid(min, max, resolution, goal.GetComponent<BoxCollider>());
 
-//		mc = GetComponent<MeshColorer> ();
+		mc = GetComponent<MeshColorer> ();
 //		Vector3[] vertices = new Vector3[resi * resj];
 //		for (int i = 0; i < resi; i++) {
 //			for (int j = 0; j < resj; j++) {
 //				vertices [i * resi + j] = new Vector3 ((i + 0.5F) * mGrid.cellWidth, 0, (j + 0.5F) * mGrid.cellWidth);
 //			}
 //		}
-//		mc.mesh.vertices = newMesh;
 
-		int vertexCount = resi * resj;
-		Vector3[] vertices = new Vector3[resi * resj];
-		int[] indices = new int[vertexCount];
-		for (int i = 0; i < resi; i++) {
-			for (int j = 0; j < resj; j++) {
-				vertices [i * resi + j] = new Vector3 ((i + 0.5F) * mGrid.cellWidth, 0, (j + 0.5F) * mGrid.cellWidth);
-				indices [i * resi + j] = i * resi + j;
-			}
-		}
+//		for (int c = 0; c < mc.colors.Length; c++) {
+//		}
+//
+//		mc.mesh.vertices = vertices;
 
-		m = new Mesh();
-		m.vertices = vertices;
-		m.SetIndices(indices, MeshTopology.Points, 0);
-		m.RecalculateBounds();
-
-		mf = GetComponent<MeshFilter>();
-		mf.mesh = m;
-		mf.mesh.colors = new Color[resi * resj];
+//		int vertexCount = resi * resj;
+//		Vector3[] vertices = new Vector3[resi * resj];
+//		int[] indices = new int[vertexCount];
+//		for (int i = 0; i < resi; i++) {
+//			for (int j = 0; j < resj; j++) {
+//				vertices [i * resi + j] = new Vector3 ((i + 0.5F) * mGrid.cellWidth, 0, (j + 0.5F) * mGrid.cellWidth);
+//				indices [i * resi + j] = i * resi + j;
+//			}
+//		}
+//
+//		m = new Mesh();
+//		m.vertices = vertices;
+//		m.SetIndices(indices, MeshTopology.Points, 0);
+//		m.RecalculateBounds();
+//
+//		mf = GetComponent<MeshFilter>();
+//		mf.mesh = m;
+//		mf.mesh.colors = new Color[resi * resj];
 
 
 		// Set Goals
@@ -109,13 +113,16 @@ public class ContinuumSolver : MonoBehaviour {
 		mGrid.splat (agents);
 
 		// Color density
-		for (int c = 0; c < resi * resj; c++) {
+		for (int c = 0; c < mc.mesh.colors.Length; c++) {
 			// local point
-			Vector2 lp = mGrid.getLocalPoint(mf.mesh.vertices[c]);
+//			Vector2 lp = mGrid.getLocalPoint(mf.mesh.vertices[c]);
+			Vector2 lp = mGrid.getLocalPoint(mc.mesh.vertices[c]);
 			float density = mGrid.getDensity (lp);
 
-			mf.mesh.colors [c] = new Color (0, 1, density, 1);
+			mc.colors [c] = new Color (0, 1, density, 1);
+//			mf.mesh.colors [c] = new Color (0, 1, density, 1);
 		}
+		mc.mesh.colors = mc.colors;
 
 		// For each group
 		// Construct Unit Cost Field
@@ -123,11 +130,11 @@ public class ContinuumSolver : MonoBehaviour {
 		mGrid.UpdateVelocityAndCostFields ();
 
 		// Dynamic Potentional Field Construction
-//		constructPotentialField();
+		mGrid.constructPotentialField();
 
 		// Boundary Conditions
 
-		// Advect
+//		// Advect
 //		foreach (Agent a in agents) {
 //			Vector2 localpt = mGrid.getLocalPoint (a.getWorldPosition ());
 //			int Uidx = mGrid.gridRose [0].getIdx (localpt);
@@ -165,121 +172,123 @@ public class ContinuumSolver : MonoBehaviour {
 		return i >= bound_minx && i <= bound_maxx && j >= bound_miny && j <= bound_maxy;
 	}
 
-
-
-
-	void constructPotentialField() {
-		// Set goal potential
-		int goal_minx = (int) mGrid.marker.getIdxVec2 (goal_min).x;
-		int goal_miny = (int) mGrid.marker.getIdxVec2 (goal_min).y;
-		int goal_maxx = (int) mGrid.marker.getIdxVec2 (goal_max).x;
-		int goal_maxy = (int) mGrid.marker.getIdxVec2 (goal_max).y;
-
-		for (int i = 0; i < resi; i++) {
-			for (int j = 0; j < resj; j++) {
-				if (isWithinBounds (goal_minx, goal_miny, goal_maxx, goal_maxy, i, j)) {
-					mGrid.gridPotential.set (i, j, 0);
-				} else {
-					mGrid.gridPotential.set (i, j, Mathf.Infinity);
-				}
-			}
-		}
-
-		// Add Candidate Cells to the Stack
-//		Stack<Vector2> cells = new Stack<Vector2>();
-		MyMinHeap cells = new MyMinHeap(mGrid);
-
-		// UNKNOWN Cells adjcent to KNOWN cells are included int he list of CANDIDATE CELLS
-		int border_minx = Mathf.Clamp(goal_minx - 1, 0, resi);
-		int border_miny = Mathf.Clamp(goal_miny - 1, 0, resj);
-		int border_maxx = Mathf.Clamp(goal_maxx + 1, 0, resi);
-		int border_maxy = Mathf.Clamp(goal_maxy + 1, 0, resj);
-
-		// minx to maxx
-		if (border_miny < goal_miny) {
-			for (int i = border_minx; i <= border_maxx; i++) {
-				cells.insert (new Vector2(i, border_miny));
-			}
-		}
-
-		if (border_maxy > goal_maxy) {
-			for (int i = border_minx; i <= border_maxx; i++) {
-				cells.insert (new Vector2(i, border_maxy));
-			}
-		}
-
-		if (border_minx < goal_minx) {
-			for (int j = border_miny; j <= border_maxy; j++) {
-				cells.insert (new Vector2 (border_minx, j));
-			}
-		}
-
-		if (border_maxx > goal_maxx) {
-			for (int j = border_miny; j <= border_maxy; j++) {
-				cells.insert (new Vector2(border_maxx, j));
-			}
-		}
-
-		// Main Loop
-		while (cells.count > 0) { // While not empty
-			// Pop Candidate with Minimal Potential
-			Vector2 idx = cells.removeMin();
-//			float minPotential = mGrid.gridPotential.get(idx);
-			mGrid.marker.set(idx, KNOWN); // MARK
-
-			int i = (int) idx [0];
-			int j = (int) idx [1];
-
-			// Get Neighbors
-			Vector2[] neighbors = mGrid.gridPotential.getFaceNeighbors(i, j);
-			float mx, my;
-			int x, y;
-
-
-			if (mGrid.gridPotential.get (neighbors [0]) + mGrid.gridCost [0].get (neighbors [0]) <
-				mGrid.gridPotential.get (neighbors [2]) + mGrid.gridCost [2].get (neighbors [2])) {
-				mx = mGrid.gridPotential.get (neighbors [0]) + mGrid.gridCost [0].get (neighbors [0]);
-				x = 0;
-			} else {
-				mx = mGrid.gridPotential.get (neighbors [2]) + mGrid.gridCost [2].get (neighbors [2]);
-				x = 2;
-			}
-
-			if (mGrid.gridPotential.get (neighbors [1]) + mGrid.gridCost [1].get (neighbors [1]) <
-			    mGrid.gridPotential.get (neighbors [3]) + mGrid.gridCost [3].get (neighbors [3])) {
-				my = mGrid.gridPotential.get (neighbors [1]) + mGrid.gridCost [1].get (neighbors [1]);
-				y = 1;
-			} else {
-				my = mGrid.gridPotential.get (neighbors [3]) + mGrid.gridCost [3].get (neighbors [3]);
-				y = 3;
-			}
-				
-			// Wolfram Alpha Check
-			float b = mGrid.gridCost [x].get (neighbors [x]);
-			float d = mGrid.gridCost [y].get (neighbors [y]);
-			float M = 0;
-			if (mx >= Mathf.Infinity - 100 && my >= Mathf.Infinity) {
-				// Both are infinity, shouldn't happen.
-				print ("mx and my are both infinity");
-			} else if (mx >= Mathf.Infinity - 100) {
-				M = mx - d;
-			} else if (my >= Mathf.Infinity - 100) {
-				M = my - d;
-			} else {
-				M = Mathf.Sqrt (b * b * d * d * (-mx * mx + 2 * mx * my + b * b - my * my + d * d)) + mx * d * d + b * b * my;
-				M /= b * b + d * d;
-			}
-
-			mGrid.gridPotential.set (i, j, M); // Set potential at this point
-
-			// Add all neighbors to the queue if unknown
-			for (int n = 0; n < 4; n++) {
-				if (mGrid.marker.get (neighbors [n]).Equals (UNKNOWN)) {
-					cells.insert (neighbors [n]);
-				}
-			}
-		}
-	}
+//	public void constructPotentialField() {
+//		int a = 4; // TODO: NOTHING
+//
+//
+//		// Set goal potential
+//		Vector2 what = mGrid.marker.getIdxVec2 (goal_min);
+//
+//		int goal_minx = (int) mGrid.marker.getIdxVec2 (goal_min)[0];
+//		int goal_miny = (int) mGrid.marker.getIdxVec2 (goal_min)[1];
+//		int goal_maxx = (int) mGrid.marker.getIdxVec2 (goal_max)[0];
+//		int goal_maxy = (int) mGrid.marker.getIdxVec2 (goal_max)[1];
+//
+//		for (int i = 0; i < resi; i++) {
+//			for (int j = 0; j < resj; j++) {
+//				if (isWithinBounds (goal_minx, goal_miny, goal_maxx, goal_maxy, i, j)) {
+//					mGrid.gridPotential.set (i, j, 0);
+//				} else {
+//					mGrid.gridPotential.set (i, j, Mathf.Infinity);
+//				}
+//			}
+//		}
+//
+//		// Add Candidate Cells to the Stack
+////		Stack<Vector2> cells = new Stack<Vector2>();
+//		MyMinHeap cells = new MyMinHeap(mGrid);
+//
+//		// UNKNOWN Cells adjcent to KNOWN cells are included int he list of CANDIDATE CELLS
+//		int border_minx = Mathf.Clamp(goal_minx - 1, 0, resi);
+//		int border_miny = Mathf.Clamp(goal_miny - 1, 0, resj);
+//		int border_maxx = Mathf.Clamp(goal_maxx + 1, 0, resi);
+//		int border_maxy = Mathf.Clamp(goal_maxy + 1, 0, resj);
+//
+//		// minx to maxx
+//		if (border_miny < goal_miny) {
+//			for (int i = border_minx; i <= border_maxx; i++) {
+//				cells.insert (new Vector2(i, border_miny));
+//			}
+//		}
+//
+//		if (border_maxy > goal_maxy) {
+//			for (int i = border_minx; i <= border_maxx; i++) {
+//				cells.insert (new Vector2(i, border_maxy));
+//			}
+//		}
+//
+//		if (border_minx < goal_minx) {
+//			for (int j = border_miny; j <= border_maxy; j++) {
+//				cells.insert (new Vector2 (border_minx, j));
+//			}
+//		}
+//
+//		if (border_maxx > goal_maxx) {
+//			for (int j = border_miny; j <= border_maxy; j++) {
+//				cells.insert (new Vector2(border_maxx, j));
+//			}
+//		}
+//
+//		// Main Loop
+//		while (cells.count > 0) { // While not empty
+//			// Pop Candidate with Minimal Potential
+//			Vector2 idx = cells.removeMin();
+////			float minPotential = mGrid.gridPotential.get(idx);
+//			mGrid.marker.set(idx, KNOWN); // MARK
+//
+//			int i = (int) idx [0];
+//			int j = (int) idx [1];
+//
+//			// Get Neighbors
+//			Vector2[] neighbors = mGrid.gridPotential.getFaceNeighbors(i, j);
+//			float mx, my;
+//			int x, y;
+//
+//
+//			if (mGrid.gridPotential.get (neighbors [0]) + mGrid.gridCost [0].get (neighbors [0]) <
+//				mGrid.gridPotential.get (neighbors [2]) + mGrid.gridCost [2].get (neighbors [2])) {
+//				mx = mGrid.gridPotential.get (neighbors [0]) + mGrid.gridCost [0].get (neighbors [0]);
+//				x = 0;
+//			} else {
+//				mx = mGrid.gridPotential.get (neighbors [2]) + mGrid.gridCost [2].get (neighbors [2]);
+//				x = 2;
+//			}
+//
+//			if (mGrid.gridPotential.get (neighbors [1]) + mGrid.gridCost [1].get (neighbors [1]) <
+//			    mGrid.gridPotential.get (neighbors [3]) + mGrid.gridCost [3].get (neighbors [3])) {
+//				my = mGrid.gridPotential.get (neighbors [1]) + mGrid.gridCost [1].get (neighbors [1]);
+//				y = 1;
+//			} else {
+//				my = mGrid.gridPotential.get (neighbors [3]) + mGrid.gridCost [3].get (neighbors [3]);
+//				y = 3;
+//			}
+//				
+//			// Wolfram Alpha Check
+//			float b = mGrid.gridCost [x].get (neighbors [x]);
+//			float d = mGrid.gridCost [y].get (neighbors [y]);
+//			float M = 0;
+//			if (mx >= Mathf.Infinity - 100 && my >= Mathf.Infinity) {
+//				// Both are infinity, shouldn't happen.
+//				print ("mx and my are both infinity");
+//			} else if (mx >= Mathf.Infinity - 100) {
+//				M = mx - d;
+//			} else if (my >= Mathf.Infinity - 100) {
+//				M = my - d;
+//			} else {
+//				M = Mathf.Sqrt (b * b * d * d * (-mx * mx + 2 * mx * my + b * b - my * my + d * d)) + mx * d * d + b * b * my;
+//				M /= b * b + d * d;
+//			}
+//
+//			mGrid.gridPotential.set (i, j, M); // Set potential at this point
+//
+//			// Add all neighbors to the queue if unknown
+//			for (int n = 0; n < 4; n++) {
+//				if (mGrid.marker.get (neighbors [n]).Equals (UNKNOWN)) {
+//					cells.insert (neighbors [n]);
+//				}
+//			}
+//		}
+//	}
 
 	void constructGradientPotential() {
 		// grad U

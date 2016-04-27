@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class MyMinHeap {
 	private MACGrid g;
-	private List<Vector2> items = new List<Vector2>();
+	public List<Vector2> items = new List<Vector2>();
 
 	public MyMinHeap (MACGrid grid) {
 		g = grid;
@@ -43,17 +43,19 @@ public class MyMinHeap {
 		items.RemoveAt (items.Count - 1);
 		sink (0);
 
+
 		return min;
 	}
 		
 	public void sink(int k) {
+		// TODO: YOU HAVE AN INFINITE LOOP
 		while (2 * k < items.Count) {
 			int j = 2 * k;
-			if (j < items.Count - 1 && compare (items [j], items [j + 1]) < 0) {
+			if (j < items.Count - 1 && compare (items [j], items [j + 1]) >= 0) {
 				j++;
 			}
 
-			if (compare (items[k], items[j]) >= 0) {
+			if (compare (items[k], items[j]) <= 0) {
 				break;
 			}
 

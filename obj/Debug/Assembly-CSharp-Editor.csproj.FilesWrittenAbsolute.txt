@@ -25,3 +25,5 @@
 /Users/Shared/Unity/CIS 700 Continuum Crowds/Temp/bin/Debug/Unity.CecilTools.dll
 /Users/Shared/Unity/CIS 700 Continuum Crowds/Temp/bin/Debug/Mono.Cecil.Pdb.dll
 /Users/Shared/Unity/CIS 700 Continuum Crowds/Temp/bin/Debug/Mono.Cecil.Mdb.dll
+/Users/Shared/Unity/CIS 700 Continuum Crowds/Temp/bin/Debug/Assembly-CSharp.dll
+/Users/Shared/Unity/CIS 700 Continuum Crowds/Temp/bin/Debug/Assembly-CSharp.dll.mdb

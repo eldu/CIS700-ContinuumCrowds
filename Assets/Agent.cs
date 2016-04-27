@@ -37,7 +37,7 @@ public class Agent : MonoBehaviour {
 
 	public void setVelocity(Vector2 v) {
 		Vector3 result = new Vector3 (v [0], GetComponent<Rigidbody> ().velocity.y, v [1]);
-		GetComponent<Rigidbody> ().velocity = result;
+		GetComponent<Rigidbody> ().velocity.Set (result.x, result.y, result.z);
 	}
 
 	public Vector2 getWorldPosition () {

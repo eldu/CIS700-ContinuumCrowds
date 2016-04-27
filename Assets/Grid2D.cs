@@ -108,6 +108,13 @@ public class Grid2D {
 		return new Vector2 (i, j);
 	}
 
+	public Vector2 getIdxVec2(Vector3 p) {
+		int i = (int) p[0];
+		int j = (int) p[2];
+
+		return new Vector2 (i, j);
+	}
+
 	// -----------------------------------------------------------------------------
 	// Get Neighbors
 	// -----------------------------------------------------------------------------
