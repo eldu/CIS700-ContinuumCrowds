@@ -51,7 +51,10 @@ public class MyMinHeap {
 		// TODO: YOU HAVE AN INFINITE LOOP
 		while (2 * k < items.Count) {
 			int j = 2 * k;
-			if (j < items.Count - 1 && compare (items [j], items [j + 1]) >= 0) {
+
+			float what = compare (items [j], items [j + 1]);
+
+			if (j < items.Count - 1 && what >= 0) {
 				j++;
 			}
 
@@ -80,6 +83,28 @@ public class MyMinHeap {
 
 	// Compare based on potentials
 	public float compare(Vector2 a, Vector2 b) {
-		return g.gridPotential.get (a)  - g.gridPotential.get(b);
+		float pa = g.gridPotential.get (a);
+		float pb = g.gridPotential.get(b);
+
+		if (fequal (pa, pb)) {
+			return 0;
+		}
+
+		return pa - pb;
+	}
+
+	public bool fequal(float a, float b) {
+		float epsilon = 0.0001F;
+
+		if (a == b) {
+			return true;
+		}
+
+		float diff = Mathf.Abs(a - b);
+		if (a * b == 0) {
+			return diff < (epsilon * epsilon);
+		}
+
+		return diff / (Mathf.Abs (a) + Mathf.Abs (b)) < epsilon;
 	}
 }
