@@ -22,7 +22,12 @@ public class Grid2D {
 	// Override operators basically (TODO: Actually override operators)
 	// -----------------------------------------------------------------------------
 	public float get(int idx) {
-		return  data[idx];
+		if (idx < 0 || idx >= data.Length) {
+			// Out of bounds
+			return Mathf.Infinity; // TODO
+		} else {
+			return  data [idx];
+		}
 	}
 
 	public float get(int i , int j) {
@@ -31,7 +36,13 @@ public class Grid2D {
 
 	public float get(Vector2 index) {
 		int idx = convertIdx(index);
-		return  data[idx];
+
+		if (idx < 0 || idx >= data.Length) {
+			// Out of bounds
+			return Mathf.Infinity; // TODO
+		} else {
+			return  data [idx];
+		}
 	}
 
 	public void set(int idx, float value) {

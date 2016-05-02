@@ -31,8 +31,8 @@ public class MACGrid {
 //	public Grid2D gridCU; // Cost in x direction
 //	public Grid2D gridCV; // Cost in z direction
 	public Grid2D marker; // 0 = empty, 1 = obstacle
-	public Grid2D[] gridRose = new Grid2D[2]; // Velocity
-	public Grid2D[] gridCost = new Grid2D[2]; 
+	public Grid2D[] gridRose = new Grid2D[4]; // Velocity
+	public Grid2D[] gridCost = new Grid2D[4]; 
 	public Grid2D gradU;
 	public Grid2D gradV;
 	public Vector2[] gridAverageVelocity;
@@ -102,8 +102,12 @@ public class MACGrid {
 //		for (int i = 0; i < 2; i++) {
 			gridRose [0] = new Grid2D (resx + 1, resz);
 			gridCost [0] = new Grid2D (resx + 1, resz);
-			gridRose [0] = new Grid2D (resx, resz + 1);
-			gridCost [0] = new Grid2D (resx, resz + 1);
+			gridRose [1] = new Grid2D (resx, resz + 1);
+			gridCost [1] = new Grid2D (resx, resz + 1);
+			gridRose [2] = new Grid2D (resx + 1, resz);
+			gridCost [2] = new Grid2D (resx + 1, resz);
+			gridRose [3] = new Grid2D (resx, resz + 1);
+			gridCost [3] = new Grid2D (resx, resz + 1);
 //		}
 	}
 
@@ -130,12 +134,14 @@ public class MACGrid {
 
 		gridPotential = new Grid2D (resx, resz);
 
-		for (int i = 0; i < 2; i++) {
-			gridRose [0] = new Grid2D (resx + 1, resz);
-			gridCost [0] = new Grid2D (resx + 1, resz);
-			gridRose [1] = new Grid2D (resx, resz + 1);
-			gridCost [1] = new Grid2D (resx, resz + 1);
-		}
+		gridRose [0] = new Grid2D (resx + 1, resz);
+		gridCost [0] = new Grid2D (resx + 1, resz);
+		gridRose [1] = new Grid2D (resx, resz + 1);
+		gridCost [1] = new Grid2D (resx, resz + 1);
+		gridRose [2] = new Grid2D (resx + 1, resz);
+		gridCost [2] = new Grid2D (resx + 1, resz);
+		gridRose [3] = new Grid2D (resx, resz + 1);
+		gridCost [3] = new Grid2D (resx, resz + 1);
 	}
 
 	public void splat(Agent[] agents) {
@@ -300,14 +306,13 @@ public class MACGrid {
 
 
 	public void constructPotentialField() {
-		Grid2D whatthe = marker;
 		Vector2 fml = marker.getIdxVec2 (box_min);
 
 		// Set goal potential
-		int goal_minx = (int) fml[0];
-		int goal_miny = (int) marker.getIdxVec2 (box_min)[1];
-		int goal_maxx = (int) marker.getIdxVec2 (box_max)[0];
-		int goal_maxy = (int) marker.getIdxVec2 (box_max)[1];
+		int goal_minx = (int)fml [0];
+		int goal_miny = (int)marker.getIdxVec2 (box_min) [1];
+		int goal_maxx = (int)marker.getIdxVec2 (box_max) [0];
+		int goal_maxy = (int)marker.getIdxVec2 (box_max) [1];
 
 		for (int i = 0; i < resx; i++) {
 			for (int j = 0; j < resz; j++) {
@@ -321,24 +326,24 @@ public class MACGrid {
 
 		// Add Candidate Cells to the Stack
 		//		Stack<Vector2> cells = new Stack<Vector2>();
-		MyMinHeap cells = new MyMinHeap(this);
+		MyMinHeap cells = new MyMinHeap (this);
 
 		// UNKNOWN Cells adjcent to KNOWN cells are included int he list of CANDIDATE CELLS
-		int border_minx = Mathf.Clamp(goal_minx - 1, 0, resx);
-		int border_miny = Mathf.Clamp(goal_miny - 1, 0, resz);
-		int border_maxx = Mathf.Clamp(goal_maxx + 1, 0, resx);
-		int border_maxy = Mathf.Clamp(goal_maxy + 1, 0, resz);
+		int border_minx = Mathf.Clamp (goal_minx - 1, 0, resx);
+		int border_miny = Mathf.Clamp (goal_miny - 1, 0, resz);
+		int border_maxx = Mathf.Clamp (goal_maxx + 1, 0, resx);
+		int border_maxy = Mathf.Clamp (goal_maxy + 1, 0, resz);
 
 		// minx to maxx
 		if (border_miny < goal_miny) {
 			for (int i = border_minx; i <= border_maxx; i++) {
-				cells.insert (new Vector2(i, border_miny));
+				cells.insert (new Vector2 (i, border_miny));
 			}
 		}
 
 		if (border_maxy > goal_maxy) {
 			for (int i = border_minx; i <= border_maxx; i++) {
-				cells.insert (new Vector2(i, border_maxy));
+				cells.insert (new Vector2 (i, border_maxy));
 			}
 		}
 
@@ -350,28 +355,28 @@ public class MACGrid {
 
 		if (border_maxx > goal_maxx) {
 			for (int j = border_miny; j <= border_maxy; j++) {
-				cells.insert (new Vector2(border_maxx, j));
+				cells.insert (new Vector2 (border_maxx, j));
 			}
 		}
 
 		// Main Loop
 		while (cells.items.Count > 0) { // While not empty
 			// Pop Candidate with Minimal Potential
-			Vector2 idx = cells.removeMin();
+			Vector2 idx = cells.removeMin ();
 			//			float minPotential = mGrid.gridPotential.get(idx);
-			marker.set(idx, KNOWN); // MARK
+			marker.set (idx, KNOWN); // MARK
 
-			int i = (int) idx [0];
-			int j = (int) idx [1];
+			int i = (int)idx [0];
+			int j = (int)idx [1];
 
 			// Get Neighbors
-			Vector2[] neighbors = gridPotential.getFaceNeighbors(i, j);
+			Vector2[] neighbors = gridPotential.getFaceNeighbors (i, j);
 			float mx, my;
 			int x, y;
 
 
 			if (gridPotential.get (neighbors [0]) + gridCost [0].get (neighbors [0]) <
-				gridPotential.get (neighbors [2]) + gridCost [2].get (neighbors [2])) {
+			    gridPotential.get (neighbors [2]) + gridCost [2].get (neighbors [2])) {
 				mx = gridPotential.get (neighbors [0]) + gridCost [0].get (neighbors [0]);
 				x = 0;
 			} else {
@@ -380,7 +385,7 @@ public class MACGrid {
 			}
 
 			if (gridPotential.get (neighbors [1]) + gridCost [1].get (neighbors [1]) <
-				gridPotential.get (neighbors [3]) + gridCost [3].get (neighbors [3])) {
+			    gridPotential.get (neighbors [3]) + gridCost [3].get (neighbors [3])) {
 				my = gridPotential.get (neighbors [1]) + gridCost [1].get (neighbors [1]);
 				y = 1;
 			} else {
@@ -414,9 +419,6 @@ public class MACGrid {
 			}
 		}
 	}
-
-
-
 
 
 	public Vector2[] getDirections(Vector2 ij) {
