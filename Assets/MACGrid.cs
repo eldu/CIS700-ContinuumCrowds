@@ -366,13 +366,7 @@ public class MACGrid {
 			// Pop Candidate with Minimal Potential
 			Vector2 idx = cells.removeMin ();
 
-			if (cells.items.Count == 1) {
-				int brekerbekbksbks = 4;
-			}
-
 			if (marker.get (idx) == KNOWN) {
-				int hello = 0;
-
 				continue;
 			}
 

@@ -47,12 +47,14 @@
   <ItemGroup>
      <Compile Include="Assets\Agent.cs" />
      <Compile Include="Assets\ContinuumSolver.cs" />
+     <Compile Include="Assets\EnablePointSize.cs" />
      <Compile Include="Assets\Grid2D.cs" />
      <Compile Include="Assets\MACGrid.cs" />
      <Compile Include="Assets\MeshColorer.cs" />
      <Compile Include="Assets\MoveTo.cs" />
      <Compile Include="Assets\MyMinHeap.cs" />
      <Compile Include="Assets\Obstacle.cs" />
+     <Compile Include="Assets\PointCloud.cs" />
      <None Include="Assets\PlainShader.shader" />
      <None Include="Assets\Vertex Colored.shader" />
      <None Include="Assets\Standard Assets\CrossPlatformInput\CrossPlatformInputGuidelines.txt" />

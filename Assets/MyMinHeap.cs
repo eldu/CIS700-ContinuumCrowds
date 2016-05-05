@@ -51,7 +51,6 @@ public class MyMinHeap {
 	}
 		
 	public void sink(int k) {
-		// TODO: YOU HAVE AN INFINITE LOOP
 		while (2 * k < items.Count) {
 			int j = 2 * k;
 

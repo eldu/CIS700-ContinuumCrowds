@@ -80,11 +80,13 @@
 -define:CROSS_PLATFORM_INPUT
 'Assets/Agent.cs'
 'Assets/ContinuumSolver.cs'
+'Assets/EnablePointSize.cs'
 'Assets/Grid2D.cs'
 'Assets/MACGrid.cs'
 'Assets/MeshColorer.cs'
 'Assets/MoveTo.cs'
 'Assets/MyMinHeap.cs'
 'Assets/Obstacle.cs'
+'Assets/PointCloud.cs'
 -r:'/Applications/Unity/Unity.app/Contents/Frameworks/Mono/lib/mono/unity/System.Runtime.Serialization.dll'
 -r:'/Applications/Unity/Unity.app/Contents/Frameworks/Mono/lib/mono/unity/System.Xml.Linq.dll'
