@@ -44,8 +44,21 @@ public class ContinuumSolver : MonoBehaviour {
 	public float DISCOMFORT_WEIGHT = 0.8f;
 
 
+	// FPS Counter
+	public float updateInterval = 0.5F;
+	private double lastInterval;
+	private int frames;
+	private float fps;
+
+//	void OnGUI() {
+//		GUILayout.Label("" + fps.ToString("f2"));
+//	}
+
 	// Use this for initialization
 	void Start () {
+		lastInterval = Time.realtimeSinceStartup;
+		frames = 0;
+
 		quantity = (int) Mathf.Clamp (quantity, 0, maxNumAgents);
 //		obstacles = Object.FindObjectsOfType (typeof(Obstacle)) as Obstacle[];
 
@@ -92,6 +105,9 @@ public class ContinuumSolver : MonoBehaviour {
 
 	// After everything has been initalized
 	void Awake() {
+		// Set FPS
+		Application.targetFrameRate = -1; // As fast as it can
+
 		// Populate Agents
 		agents = new Agent[quantity];
 		agents [0] = original_agent.GetComponent<Agent> ();
@@ -104,6 +120,15 @@ public class ContinuumSolver : MonoBehaviour {
 
 	// Update is called once per frame
 	void FixedUpdate () {
+//		++frames;
+//		float timeNow = Time.realtimeSinceStartup;
+//		if (timeNow > lastInterval + updateInterval) {
+//			fps = (float)(frames / timeNow - lastInterval);
+//			frames = 0;
+//			lastInterval = timeNow;
+//		}
+
+
 		// Clear Grids
 		mGrid.clear ();
 
@@ -134,26 +159,26 @@ public class ContinuumSolver : MonoBehaviour {
 
 		// Boundary Conditions
 
-//		// Advect
-//		foreach (Agent a in agents) {
-//			Vector2 localpt = mGrid.getLocalPoint (a.getWorldPosition ());
-//			int Uidx = mGrid.gridRose [0].getIdx (localpt);
-////			float Uvelocity = mGrid.gridRose [0].get (Uidx);
-//
-//			int Vidx = mGrid.gridRose [1].getIdx (localpt);
-////			float Vvelocity = mGrid.gridRose [1].get (Uidx);
-//
-//			float Upotential = mGrid.gradU.get (Uidx);
-//			float Vpotential = mGrid.gradV.get (Vidx);
-//
-////			Vector2 flowspeed = new Vector2 (Uvelocity, Vvelocity);
-//			float flowspeed = mGrid.getSpeed(localpt, a.getNormal());
-//			Vector2 potential = new Vector2 (Upotential, Vpotential);
-//
-//			Vector2 result = -1 * flowspeed * potential.normalized;
-//
-//			a.setVelocity (result);
-//		}
+		// Advect
+		foreach (Agent a in agents) {
+			Vector2 localpt = mGrid.getLocalPoint (a.getWorldPosition ());
+			int Uidx = mGrid.gridRose [0].getIdx (localpt);
+//			float Uvelocity = mGrid.gridRose [0].get (Uidx);
+
+			int Vidx = mGrid.gridRose [1].getIdx (localpt);
+//			float Vvelocity = mGrid.gridRose [1].get (Uidx);
+
+			float Upotential = mGrid.gradU.get (Uidx);
+			float Vpotential = mGrid.gradV.get (Vidx);
+
+//			Vector2 flowspeed = new Vector2 (Uvelocity, Vvelocity);
+			float flowspeed = mGrid.getSpeed(localpt, a.getNormal());
+			Vector2 potential = new Vector2 (Upotential, Vpotential);
+
+			Vector2 result = -1 * flowspeed * potential.normalized;
+
+			a.setVelocity (result);
+		}
 	}
 
 
@@ -290,33 +315,33 @@ public class ContinuumSolver : MonoBehaviour {
 //		}
 //	}
 
-	void constructGradientPotential() {
-		// grad U
-		for (int i = 0; i < resi - 1; i++) {
-			for (int j = 0; j < resj; j++) {
-				float curr = mGrid.gridPotential.get (i, j);
-				float next = mGrid.gridPotential.get (i + 1, j);
-				mGrid.gradU.set (i, j, next - curr);
-			}
-		}
-
-		// Boundary
-		for (int j = 0; j < resj; j++) {
-//			float curr = mGrid.gridPotential.get (resi - 1);
-			mGrid.gradU.set (resi - 1, j, Mathf.Infinity);
-		}
-
-		for (int i = 0; i < resi; i++) {
-			mGrid.gradV.set (i, resj - 1, Mathf.Infinity);
-		}
-
-		// Grad v
-		for (int i = resi; i < resi; i++) {
-			for (int j = resj; j < resj; j++) {
-				float curr = mGrid.gridPotential.get (i, j);
-				float next = mGrid.gridPotential.get (i, j + 1);
-				mGrid.gradV.set (i, j, next - curr);
-			}
-		}
-	}
+//	void constructGradientPotential() {
+//		// grad U
+//		for (int i = 0; i < resi - 1; i++) {
+//			for (int j = 0; j < resj; j++) {
+//				float curr = mGrid.gridPotential.get (i, j);
+//				float next = mGrid.gridPotential.get (i + 1, j);
+//				mGrid.gradU.set (i, j, next - curr);
+//			}
+//		}
+//
+//		// Boundary
+//		for (int j = 0; j < resj; j++) {
+////			float curr = mGrid.gridPotential.get (resi - 1);
+//			mGrid.gradU.set (resi - 1, j, Mathf.Infinity);
+//		}
+//
+//		for (int i = 0; i < resi; i++) {
+//			mGrid.gradV.set (i, resj - 1, Mathf.Infinity);
+//		}
+//
+//		// Grad v
+//		for (int i = resi; i < resi; i++) {
+//			for (int j = resj; j < resj; j++) {
+//				float curr = mGrid.gridPotential.get (i, j);
+//				float next = mGrid.gridPotential.get (i, j + 1);
+//				mGrid.gradV.set (i, j, next - curr);
+//			}
+//		}
+//	}
 }

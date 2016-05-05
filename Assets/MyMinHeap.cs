@@ -41,7 +41,10 @@ public class MyMinHeap {
 		Vector2 temp = items[items.Count - 1];
 		items [0] = temp;
 		items.RemoveAt (items.Count - 1);
-		sink (0);
+
+		if (items.Count > 1) {
+			sink (0);
+		}
 
 
 		return min;
@@ -93,7 +96,7 @@ public class MyMinHeap {
 		return pa - pb;
 	}
 
-	public bool fequal(float a, float b) {
+	public static bool fequal(float a, float b) {
 		float epsilon = 0.0001F;
 
 		if (a == b) {

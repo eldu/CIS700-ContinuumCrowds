@@ -38,8 +38,7 @@ public class MACGrid {
 	public Vector2[] gridAverageVelocity;
 
 	// Cardinal Directions
-	Vector2[] n = { new Vector2 (1, 0), new Vector2 (0, 1)};
-//		, new Vector2 (-1, 0), new Vector2 (0, -1) };
+	Vector2[] n = { new Vector2 (1, 0), new Vector2 (0, 1), new Vector2 (-1, 0), new Vector2 (0, -1) };
 
 
 //	Vector3[] gridAveVelocity;
@@ -317,8 +316,11 @@ public class MACGrid {
 		for (int i = 0; i < resx; i++) {
 			for (int j = 0; j < resz; j++) {
 				if (isWithinBounds (goal_minx, goal_miny, goal_maxx, goal_maxy, i, j)) {
+					// Set goal as known and potential as 0
 					gridPotential.set (i, j, 0);
+					marker.set (i, j, KNOWN);
 				} else {
+					// Set all other squares as infinity for now.
 					gridPotential.set (i, j, Mathf.Infinity);
 				}
 			}
@@ -329,10 +331,10 @@ public class MACGrid {
 		MyMinHeap cells = new MyMinHeap (this);
 
 		// UNKNOWN Cells adjcent to KNOWN cells are included int he list of CANDIDATE CELLS
-		int border_minx = Mathf.Clamp (goal_minx - 1, 0, resx);
-		int border_miny = Mathf.Clamp (goal_miny - 1, 0, resz);
-		int border_maxx = Mathf.Clamp (goal_maxx + 1, 0, resx);
-		int border_maxy = Mathf.Clamp (goal_maxy + 1, 0, resz);
+		int border_minx = Mathf.Clamp (goal_minx - 1, 0, resx - 1);
+		int border_miny = Mathf.Clamp (goal_miny - 1, 0, resz - 1);
+		int border_maxx = Mathf.Clamp (goal_maxx + 1, 0, resx - 1);
+		int border_maxy = Mathf.Clamp (goal_maxy + 1, 0, resz - 1);
 
 		// minx to maxx
 		if (border_miny < goal_miny) {
@@ -363,6 +365,17 @@ public class MACGrid {
 		while (cells.items.Count > 0) { // While not empty
 			// Pop Candidate with Minimal Potential
 			Vector2 idx = cells.removeMin ();
+
+			if (cells.items.Count == 1) {
+				int brekerbekbksbks = 4;
+			}
+
+			if (marker.get (idx) == KNOWN) {
+				int hello = 0;
+
+				continue;
+			}
+
 			//			float minPotential = mGrid.gridPotential.get(idx);
 			marker.set (idx, KNOWN); // MARK
 
@@ -406,28 +419,43 @@ public class MACGrid {
 				M = my - d;
 			} else {
 				M = Mathf.Sqrt (b * b * d * d * (-mx * mx + 2 * mx * my + b * b - my * my + d * d)) + mx * d * d + b * b * my;
-				M /= b * b + d * d;
-			}
 
-			gridPotential.set (i, j, M); // Set potential at this point
-
-			// Add all neighbors to the queue if unknown
-			for (int n = 0; n < 4; n++) {
-				if (marker.get (neighbors [n]).Equals (UNKNOWN)) {
-					cells.insert (neighbors [n]);
+				float denominator = b * b + d * d;
+				if (MyMinHeap.fequal (denominator, 0)) {
+					M = Mathf.Infinity;
+				} else {
+					M /= denominator;
 				}
 			}
+
+			if (M < gridPotential.get (i, j)) {
+				gridPotential.set (i, j, M); // Set potential at this point if less than it was previously
+			}
+
+
+			// Add all neighbors to the queue if unknown
+//			for (int n = 0; n < 4; n++) {
+//				int ndx = marker.convertIdx(neighbors[n]);
+//
+//				if (ndx >= 0 && marker.get (ndx).Equals (UNKNOWN)) {
+//					cells.insert (neighbors [n]);
+//				}
+//			}
+
+
 		}
+
+
 	}
 
 
 	public Vector2[] getDirections(Vector2 ij) {
-		Vector2[] result = new Vector2[2];
+		Vector2[] result = new Vector2[4];
 		// Counterclockwise
 		result [0] = new Vector2 (ij [0] + 0.5f, ij [1]       ); // East
 		result [1] = new Vector2 (ij [0]       , ij [1] + 0.5f); // North
-//		result [2] = new Vector2 (ij [0] - 0.5f, ij [1]       ); // West
-//		result [3] = new Vector2 (ij [0]       , ij [1] - 0.5f); // South
+		result [2] = new Vector2 (ij [0] - 0.5f, ij [1]       ); // West
+		result [3] = new Vector2 (ij [0]       , ij [1] - 0.5f); // South
 		return result;
 	}
 
