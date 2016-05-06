@@ -158,6 +158,7 @@ public class MACGrid {
 			// not affected by their own density
 			// lamda is the density falloff
 			// p = (0.5) ^ lambda
+			Rigidbody rb = a.GetComponent<Rigidbody> ();
 
 			Vector2 bodyPosition = a.getWorldPosition();
 			Vector2 localpt = getLocalPoint (bodyPosition);
@@ -177,32 +178,36 @@ public class MACGrid {
 			int C = gridD.convertIdx (Cidx);
 			int D = gridD.convertIdx (Didx);
 
+
+
 			if (A > 0) {
 				float p = Mathf.Pow (Mathf.Min (1 - dx, 1 - dy), lamda);
 				gridD.add(A, p);
 
-				gridAverageVelocity[A] += new Vector2 (a.GetComponent<CharacterController> ().velocity.x / p, a.GetComponent<CharacterController> ().velocity.y / p);
+				gridAverageVelocity[A] += new Vector2 (rb.velocity.x / p, rb.velocity.y / p);
 
 			}
 			if (B > 0) {
 				float p = Mathf.Pow (Mathf.Min (dx, 1 - dy), lamda);
 				gridD.add(B, p);
-				gridAverageVelocity[B] += new Vector2 (a.GetComponent<CharacterController> ().velocity.x / p, a.GetComponent<CharacterController> ().velocity.y / p);
+				gridAverageVelocity[B] += new Vector2 (rb.velocity.x / p, rb.velocity.y / p);
 			}
 			if (C > 0) {
 				float p = Mathf.Pow (Mathf.Min (dx, dy), lamda);
 				gridD.add(C, p);
-				gridAverageVelocity[C] += new Vector2 (a.GetComponent<CharacterController> ().velocity.x / p, a.GetComponent<CharacterController> ().velocity.y / p);
+				gridAverageVelocity[C] += new Vector2 (rb.velocity.x / p, rb.velocity.y / p);
 			}
 			if (D > 0) {
 				float p = Mathf.Pow (Mathf.Min (1 - dx, dy), lamda);
 				gridD.add(D, p);
-				gridAverageVelocity[D] += new Vector2 (a.GetComponent<CharacterController> ().velocity.x / p, a.GetComponent<CharacterController> ().velocity.y / p);
+				gridAverageVelocity[D] += new Vector2 (rb.velocity.x / p, rb.velocity.y / p);
 			}
 
 			// Divide the speed by the density
 			for (int i = 0; i < resx * resz; i++) {
-				gridAverageVelocity[i] *= 1/gridD.get(i);
+				if (gridD.get (i) > 0) {
+					gridAverageVelocity [i] *= 1 / gridD.get (i);
+				}
 			}
 		}
 	}
@@ -215,6 +220,17 @@ public class MACGrid {
 			return MAX_DENSITY + 1;
 		} else {
 			return gridD.get (idx);
+		}
+	}
+
+	public float getPotential(Vector2 localpt) {
+		int idx = gridPotential.getIdx (localpt);
+
+		// Boundary Conditions
+		if (idx < 0) {
+			return MAX_DENSITY + 1;
+		} else {
+			return gridPotential.get (idx);
 		}
 	}
 
