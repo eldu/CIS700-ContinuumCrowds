@@ -64,7 +64,9 @@ public class PointCloud : MonoBehaviour {
 //
 			// local point
 //			Vector2 lp = mGrid.getLocalPoint(mesh.vertices[i]);
-			float value = mGrid.getAverageVelocity (lp).x;
+
+//			float value = mGrid.getAverageVelocity (lp).x;
+			float value = mGrid.getCost (lp);
 
 			colors [i] = new Color (0, 0, value, 1);
 		}

@@ -212,6 +212,19 @@ public class MACGrid {
 		}
 	}
 
+
+	// TODO: THESE GETS ARE SO FRIVOLOUS. SERIOUSLY REFACTOR TO ONE FUNCTION. WOULD DO, BUT 3AM THOUGH.
+	public float getCost(Vector2 localpt) {
+		int idx = gridCost[0].getIdx (localpt);
+
+		// Boundary Conditions
+		if (idx < 0) {
+			return MAX_DENSITY + 1; // LOL
+		} else {
+			return gridCost[0].get (idx);
+		}
+	}
+
 	public float getDensity(Vector2 localpt) {
 		int idx = gridD.getIdx (localpt);
 
