@@ -6,7 +6,7 @@ using System;
 public class MACGrid {
 	// private static variables
 	private static int KNOWN = 1;
-//	private static int UNKNOWN = 0;
+	private static int UNKNOWN = 0;
 
 	public Vector2 min;
 	public Vector2 max;
@@ -407,7 +407,7 @@ public class MACGrid {
 			// Pop Candidate with Minimal Potential
 			Vector2 idx = cells.removeMin ();
 
-			gridPotential.set (idx, 1.0f);
+//			gridPotential.set (idx, 1.0f);
 
 //			#if REAL
 			if (marker.get (idx) == KNOWN) {
@@ -420,9 +420,9 @@ public class MACGrid {
 			int i = (int)idx [0];
 			int j = (int)idx [1];
 
-			if (i == 7 && j == 12) {
-				int breakbreakyourheart = 10;
-			}
+//			if (i == 7 && j == 12) {
+//				int breakbreakyourheart = 10;
+//			}
 
 			// Get Neighbors
 			Vector2[] neighbors = gridPotential.getFaceNeighbors (i, j);
@@ -477,14 +477,14 @@ public class MACGrid {
 			}
 //			#endif
 
-//			 // Add all neighbors to the queue if unknown
-//			for (int n = 0; n < 4; n++) {
-//				int ndx = marker.convertIdx(neighbors[n]);
-//
-//				if (ndx >= 0 && marker.get (ndx).Equals (UNKNOWN)) {
-//					cells.insert (neighbors [n]);
-//				}
-//			}
+			 // Add all neighbors to the queue if unknown
+			for (int n = 0; n < 4; n++) {
+				int ndx = marker.convertIdx(neighbors[n]);
+
+				if (ndx >= 0 && ndx < marker.data.Length && marker.get (ndx).Equals (UNKNOWN)) {
+					cells.insert (neighbors [n]);
+				}
+			}
 
 
 		}

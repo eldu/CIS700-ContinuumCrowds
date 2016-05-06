@@ -54,9 +54,7 @@ public class MyMinHeap {
 		while (2 * k < items.Count) {
 			int j = 2 * k;
 
-			float what = compare (items [j], items [j + 1]);
-
-			if (j < items.Count - 1 && what >= 0) {
+			if (j < items.Count - 1 && compare (items [j], items [j + 1]) >= 0) {
 				j++;
 			}
 
