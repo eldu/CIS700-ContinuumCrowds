@@ -152,8 +152,8 @@ public class MACGrid {
 			// lamda is the density falloff
 			// p = (0.5) ^ lambda
 
-			Vector3 bodyPosition = a.getWorldPosition();
-			Vector2 localpt = getLocalPoint (new Vector2 (bodyPosition [0], bodyPosition [2]));
+			Vector2 bodyPosition = a.getWorldPosition();
+			Vector2 localpt = getLocalPoint (bodyPosition);
 
 			Vector2 Aidx = gridD.getA(localpt);
 			Vector2 Bidx = new Vector2 (Aidx [0], Aidx [1] + 1);
@@ -198,6 +198,7 @@ public class MACGrid {
 				gridAverageVelocity[i] *= 1/gridD.get(i);
 			}
 		}
+
 	}
 
 	public float getDensity(Vector2 localpt) {
@@ -260,6 +261,8 @@ public class MACGrid {
 	public float DISCOMFORT_WEIGHT = 0.8f;
 
 	public void UpdateVelocityAndCostFields() {
+
+
 		for (int i = 0; i < resx; i++) {
 			for (int j = 0; j < resz; j++) {
 				Vector2 ij = new Vector2 (i, j);

@@ -59,7 +59,7 @@ public class PointCloud : MonoBehaviour {
 			Vector2 lp = mGrid.getLocalPoint(mesh.vertices[i]);
 			float density = mGrid.getDensity (lp);
 
-			colors [i] = new Color (0, 1, density, 1);
+			colors [i] = new Color (0, 0, density / 3.0f, 1);
 		}
 
 		mesh.colors = colors;
