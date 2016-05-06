@@ -197,12 +197,12 @@ public class Grid2D {
 				return idx;
 			} else {
 				// Cell D, top left
-				return new Vector2(idx[0] - 1, idx[1]);
+				return new Vector2(idx[0], idx[1] - 1);
 			}
 		} else {
 			if (p [1] >= c1 [1]) {
 				// Cell B, bottom right
-				return new Vector2(idx[0], idx[1] - 1);
+				return new Vector2(idx[0] - 1, idx[1]);
 			} else {
 				// Cell C, top right
 				return new Vector2(idx[0] - 1, idx[1] - 1);

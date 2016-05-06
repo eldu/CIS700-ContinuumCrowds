@@ -41,12 +41,7 @@ public class Agent : MonoBehaviour {
 	}
 
 	public Vector2 getWorldPosition () {
-		float what = GetComponent<Transform> ().position.z;
-
-
 		Vector2 result = new Vector2(GetComponent<Transform> ().position.x, GetComponent<Transform> ().position.z);
-
-		int i = 4;
 		return result;
 	}
 
