@@ -7,14 +7,6 @@ public class ContinuumSolver : MonoBehaviour {
 //	private static int KNOWN = 1;
 //	private static int UNKNOWN = 0;
 
-//	#define COLOR
-	#if COLOR
-	// Set up colorer
-	private MeshColorer mc;
-	private Mesh m;
-	private MeshFilter mf;
-	#endif
-
 	// Set up agents
 	public GameObject original_agent;
 	private Agent[] agents;
@@ -32,9 +24,6 @@ public class ContinuumSolver : MonoBehaviour {
 	private Vector2 min = new Vector2(-50, -50); // Bottom left corner
 	private Vector2 max = new Vector2(50, 50); // Top right corner
 	private Vector2 resolution = new Vector2(20, 20);
-//	private int resi = 20;
-//	private int resj = 20;
-//
 
 	private MACGrid mGrid;
 
@@ -67,40 +56,6 @@ public class ContinuumSolver : MonoBehaviour {
 
 		// Initalize the MAC Grid
 		mGrid = new MACGrid(min, max, resolution, goal.GetComponent<BoxCollider>());
-
-		#if COLOR
-		mc = GetComponent<MeshColorer> ();
-//		Vector3[] vertices = new Vector3[resi * resj];
-//		for (int i = 0; i < resi; i++) {
-//			for (int j = 0; j < resj; j++) {
-//				vertices [i * resi + j] = new Vector3 ((i + 0.5F) * mGrid.cellWidth, 0, (j + 0.5F) * mGrid.cellWidth);
-//			}
-//		}
-
-//		for (int c = 0; c < mc.colors.Length; c++) {
-//		}
-//
-//		mc.mesh.vertices = vertices;
-
-//		int vertexCount = resi * resj;
-//		Vector3[] vertices = new Vector3[resi * resj];
-//		int[] indices = new int[vertexCount];
-//		for (int i = 0; i < resi; i++) {
-//			for (int j = 0; j < resj; j++) {
-//				vertices [i * resi + j] = new Vector3 ((i + 0.5F) * mGrid.cellWidth, 0, (j + 0.5F) * mGrid.cellWidth);
-//				indices [i * resi + j] = i * resi + j;
-//			}
-//		}
-//
-//		m = new Mesh();
-//		m.vertices = vertices;
-//		m.SetIndices(indices, MeshTopology.Points, 0);
-//		m.RecalculateBounds();
-//
-//		mf = GetComponent<MeshFilter>();
-//		mf.mesh = m;
-//		mf.mesh.colors = new Color[resi * resj];
-		#endif
 
 		// Set Goals
 		goal_min = mGrid.getLocalPoint(goal.GetComponent<BoxCollider>().center - 0.5f * goal.GetComponent<BoxCollider>().size);
@@ -141,20 +96,7 @@ public class ContinuumSolver : MonoBehaviour {
 		// Average velocity
 		mGrid.splat (agents);
 
-		#if COLOR
-		// Color density
-		for (int c = 0; c < mc.mesh.colors.Length; c++) {
-			// local point
-//			Vector2 lp = mGrid.getLocalPoint(mf.mesh.vertices[c]);
-			Vector2 lp = mGrid.getLocalPoint(mc.mesh.vertices[c]);
-			float density = mGrid.getDensity (lp);
-
-			mc.colors [c] = new Color (0, 1, density, 1);
-//			mf.mesh.colors [c] = new Color (0, 1, density, 1);
-		}
-		mc.mesh.colors = mc.colors;
-		#endif
-
+		GetComponent<PointCloud> ().updateMesh (mGrid);
 
 		// For each group
 		// Construct Unit Cost Field
@@ -167,28 +109,28 @@ public class ContinuumSolver : MonoBehaviour {
 		// Boundary Conditions
 
 		// Advect
-		foreach (Agent a in agents) {
-			Rigidbody rb = a.GetComponent<Rigidbody> ();
-			Vector3 whatamilookingat = rb.velocity;
-
-			Vector2 localpt = mGrid.getLocalPoint (a.getWorldPosition ());
-			int Uidx = mGrid.gridRose [0].getIdx (localpt);
-//			float Uvelocity = mGrid.gridRose [0].get (Uidx);
-
-			int Vidx = mGrid.gridRose [1].getIdx (localpt);
-//			float Vvelocity = mGrid.gridRose [1].get (Uidx);
-
-			float Upotential = mGrid.gradU.get (Uidx);
-			float Vpotential = mGrid.gradV.get (Vidx);
-
-//			Vector2 flowspeed = new Vector2 (Uvelocity, Vvelocity);
-			float flowspeed = mGrid.getSpeed(localpt, a.getNormal());
-			Vector2 potential = new Vector2 (Upotential, Vpotential);
-
-			Vector2 result = -1 * flowspeed * potential.normalized;
-
-			rb.velocity = new Vector3(result[0], 0, result[1]);
-		}
+//		foreach (Agent a in agents) {
+//			Rigidbody rb = a.GetComponent<Rigidbody> ();
+//			Vector3 whatamilookingat = rb.velocity;
+//
+//			Vector2 localpt = mGrid.getLocalPoint (a.getWorldPosition ());
+//			int Uidx = mGrid.gridRose [0].getIdx (localpt);
+////			float Uvelocity = mGrid.gridRose [0].get (Uidx);
+//
+//			int Vidx = mGrid.gridRose [1].getIdx (localpt);
+////			float Vvelocity = mGrid.gridRose [1].get (Uidx);
+//
+//			float Upotential = mGrid.gradU.get (Uidx);
+//			float Vpotential = mGrid.gradV.get (Vidx);
+//
+////			Vector2 flowspeed = new Vector2 (Uvelocity, Vvelocity);
+//			float flowspeed = mGrid.getSpeed(localpt, a.getNormal());
+//			Vector2 potential = new Vector2 (Upotential, Vpotential);
+//
+//			Vector2 result = -1 * flowspeed * potential.normalized;
+//
+//			rb.velocity = new Vector3(result[0], 0, result[1]);
+//		}
 	}
 
 
