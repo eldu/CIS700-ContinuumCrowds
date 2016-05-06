@@ -76,6 +76,7 @@ public class MACGrid {
 			cellWidth = Mathf.Max(cellsize[0], cellsize[1]);
 			max = min + cellWidth * resolution;
 		}
+//		cellWidth = 5.0f;
 
 		// Set up Goal
 		this.box = goal;
@@ -113,6 +114,12 @@ public class MACGrid {
 	public Vector2 getLocalPoint(Vector3 world) {
 		float x = (world.x - min.x) / cellWidth;
 		float y = (world.z - min.y) / cellWidth;
+		return new Vector2 (x, y);
+	}
+
+	public Vector2 getLocalPoint(Vector2 world) {
+		float x = (world.x - min.x) / cellWidth;
+		float y = (world.y - min.y) / cellWidth;
 		return new Vector2 (x, y);
 	}
 
@@ -198,7 +205,6 @@ public class MACGrid {
 				gridAverageVelocity[i] *= 1/gridD.get(i);
 			}
 		}
-
 	}
 
 	public float getDensity(Vector2 localpt) {
