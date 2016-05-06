@@ -67,20 +67,29 @@ public class PointCloud : MonoBehaviour {
 
 //			float value = mGrid.getDensity (lp);
 //			float value = mGrid.getAverageVelocity (lp).x;
-//			float value = mGrid.getCost (lp) / 5.0f;
+//			float value = mGrid.getCost (lp) / 6.0f;
 			float value = mGrid.getPotential(lp);
 
 			if (value == Mathf.Infinity) {
 				value = 1;
+				colors [i] = new Color (0, 0, value, 1);
+			} else {
+				colors [i] = new Color (0, value, 0, 1);
 			}
 
-			colors [i] = new Color (0, 0, value, 1);
+
 		}
 
-		colors [168] = new Color (0, 1, 0);
-		colors [231] = new Color (0, 1, 0);
+		// Orange, finding relevant point.
+		colors [92] = new Color (1, 1, 0);
+//		colors [152] = new Color (1, 1, 0);
 
-		colors [209] = new Color (1, 0, 0, 1);
+		// Green, testing outside of goal boundaries
+//		colors [168] = new Color (0, 1, 0);
+//		colors [231] = new Color (0, 1, 0);
+//	
+		// RED, Initallaly have density in them.
+//		colors [209] = new Color (1, 0, 0, 1);
 //		colors [210] = new Color (1, 0, 0, 1);
 //		colors [229] = new Color (1, 0, 0, 1);
 //		colors [230] = new Color (1, 0, 0, 1);

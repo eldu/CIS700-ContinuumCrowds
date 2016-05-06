@@ -131,7 +131,7 @@ public class ContinuumSolver : MonoBehaviour {
 //			Vector2 result = -1 * flowspeed * potential.normalized;
 
 //			rb.velocity = new Vector3(result[0], 0, result[1]);
-			rb.velocity = new Vector3(3, 0, 3);
+//			rb.velocity = new Vector3(3, 0, 3);
 		}
 
 		mGrid.clear ();
