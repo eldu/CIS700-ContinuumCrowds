@@ -65,13 +65,22 @@ public class PointCloud : MonoBehaviour {
 			// local point
 //			Vector2 lp = mGrid.getLocalPoint(mesh.vertices[i]);
 
+//			float value = mGrid.getDensity (lp);
 //			float value = mGrid.getAverageVelocity (lp).x;
-			float value = mGrid.getCost (lp);
+//			float value = mGrid.getCost (lp) / 5.0f;
+			float value = mGrid.getPotential(lp);
+
+			if (value == Mathf.Infinity) {
+				value = 1;
+			}
 
 			colors [i] = new Color (0, 0, value, 1);
 		}
 
-//		colors [209] = new Color (1, 0, 0, 1);
+		colors [168] = new Color (0, 1, 0);
+		colors [231] = new Color (0, 1, 0);
+
+		colors [209] = new Color (1, 0, 0, 1);
 //		colors [210] = new Color (1, 0, 0, 1);
 //		colors [229] = new Color (1, 0, 0, 1);
 //		colors [230] = new Color (1, 0, 0, 1);

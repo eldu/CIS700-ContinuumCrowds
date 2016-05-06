@@ -15,8 +15,8 @@ public class ContinuumSolver : MonoBehaviour {
 
 	// Set up goal
 	public GameObject goal;
-	private Vector2 goal_min;
-	private Vector2 goal_max;
+//	private Vector2 goal_min;
+//	private Vector2 goal_max;
 
 	// Set up obstacles
 //	public Obstacle[] obstacles;
@@ -57,9 +57,9 @@ public class ContinuumSolver : MonoBehaviour {
 		// Initalize the MAC Grid
 		mGrid = new MACGrid(min, max, resolution, goal.GetComponent<BoxCollider>());
 
-		// Set Goals
-		goal_min = mGrid.getLocalPoint(goal.GetComponent<BoxCollider>().center - 0.5f * goal.GetComponent<BoxCollider>().size);
-		goal_max = mGrid.getLocalPoint(goal.GetComponent<BoxCollider>().center + 0.5f * goal.GetComponent<BoxCollider>().size);
+//		// Set Goals
+//		goal_min = mGrid.getLocalPoint(goal.GetComponent<BoxCollider>().center - 0.5f * goal.GetComponent<BoxCollider>().size);
+//		goal_max = mGrid.getLocalPoint(goal.GetComponent<BoxCollider>().center + 0.5f * goal.GetComponent<BoxCollider>().size);
 	}
 
 	// After everything has been initalized
@@ -96,8 +96,6 @@ public class ContinuumSolver : MonoBehaviour {
 		// Average velocity
 		mGrid.splat (agents);
 
-		GetComponent<PointCloud> ().updateMesh (mGrid);
-
 		// For each group
 		// Construct Unit Cost Field
 		// Calculate Speed Fields and Update Average Velocity
@@ -107,6 +105,9 @@ public class ContinuumSolver : MonoBehaviour {
 		mGrid.constructPotentialField();
 
 		// Boundary Conditions
+
+		// Update Colors
+		GetComponent<PointCloud> ().updateMesh (mGrid);
 
 		// Advect
 		foreach (Agent a in agents) {
