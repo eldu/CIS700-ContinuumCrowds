@@ -68,7 +68,7 @@ public class PointCloud : MonoBehaviour {
 //			float value = mGrid.getDensity (lp);
 //			float value = mGrid.getAverageVelocity (lp).x;
 //			float value = mGrid.getCost (lp) / 6.0f;
-			float value = mGrid.getPotential(lp) / 3.0f;
+			float value = mGrid.getPotential(lp) / 17.0f;
 
 			if (value == Mathf.Infinity) {
 				value = 1;

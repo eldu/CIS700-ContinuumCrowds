@@ -356,6 +356,173 @@ public class MACGrid {
 			for (int j = 0; j < resz; j++) {
 				if (isWithinBounds (goal_minx, goal_miny, goal_maxx, goal_maxy, i, j)) {
 					// Set goal as known and potential as 0
+					//					i >= bound_minx && i <= bound_maxx && j >= bound_miny && j <= bound_maxy;
+					gridPotential.set (i, j, 0);
+					marker.set (i, j, KNOWN);
+				} else {
+					// Set all other squares as infinity for now.
+					gridPotential.set (i, j, Mathf.Infinity);
+				}
+			}
+		}
+
+		// Add Candidate Cells to the Stack
+		//		Stack<Vector2> cells = new Stack<Vector2>();
+		MyMinHeap cells = new MyMinHeap (this);
+
+		// UNKNOWN Cells adjcent to KNOWN cells are included in the list of CANDIDATE CELLS
+		// DO not include corners, only face borders 
+		int border_minx = Mathf.Clamp (goal_minx - 1, 0, resx - 1);
+		int border_miny = Mathf.Clamp (goal_miny - 1, 0, resz - 1);
+		int border_maxx = Mathf.Clamp (goal_maxx + 1, 0, resx - 1);
+		int border_maxy = Mathf.Clamp (goal_maxy + 1, 0, resz - 1);
+
+		// minx to maxx
+		if (border_miny < goal_miny) {
+			for (int i = border_minx + 1; i < border_maxx; i++) {
+				cells.insert (new Vector2 (i, border_miny));
+			}
+		}
+
+		if (border_maxy > goal_maxy) {
+			for (int i = border_minx + 1; i < border_maxx; i++) {
+				cells.insert (new Vector2 (i, border_maxy));
+			}
+		}
+
+		if (border_minx < goal_minx) {
+			for (int j = border_miny + 1; j < border_maxy; j++) {
+				cells.insert (new Vector2 (border_minx, j));
+			}
+		}
+
+		if (border_maxx > goal_maxx) {
+			for (int j = border_miny + 1; j < border_maxy; j++) {
+				cells.insert (new Vector2 (border_maxx, j));
+			}
+		}
+
+		// Main Loop
+		while (!cells.isEmpty()) { // While not empty
+			for (int w = 1; w < cells.items.Count; w++) {
+				Vector2 c = cells.items [w];
+
+				if (marker.get (c) == KNOWN) {
+					continue;
+				}
+
+
+				int i = (int)c [0];
+				int j = (int)c [1];
+
+
+				// Get Neighbors
+				Vector2[] neighbors = gridPotential.getFaceNeighbors (i, j);
+				float mx, my;
+				int x, y;
+
+
+				if (gridPotential.get (neighbors [0]) + gridCost [0].get (neighbors [0]) <
+					gridPotential.get (neighbors [2]) + gridCost [2].get (neighbors [2])) {
+					mx = gridPotential.get (neighbors [0]) + gridCost [0].get (neighbors [0]);
+					x = 0;
+				} else {
+					mx = gridPotential.get (neighbors [2]) + gridCost [2].get (neighbors [2]);
+					x = 2;
+				}
+
+				if (gridPotential.get (neighbors [1]) + gridCost [1].get (neighbors [1]) <
+					gridPotential.get (neighbors [3]) + gridCost [3].get (neighbors [3])) {
+					my = gridPotential.get (neighbors [1]) + gridCost [1].get (neighbors [1]);
+					y = 1;
+				} else {
+					my = gridPotential.get (neighbors [3]) + gridCost [3].get (neighbors [3]);
+					y = 3;
+				}
+
+				// Wolfram Alpha Check
+				float b = gridCost [x].get (neighbors [x]);
+				float d = gridCost [y].get (neighbors [y]);
+				float M = 0;
+				if (mx >= Mathf.Infinity - 100 && my >= Mathf.Infinity - 100) {
+					// Both are infinity, shouldn't happen.
+					Console.WriteLine("mx and my are both infinity");
+				} else if (mx >= Mathf.Infinity - 100) {
+					//				M = mx - d; // TODO: ORIGINALY HAD THIS, BUT WHY?
+					M = my - d;
+				} else if (my >= Mathf.Infinity - 100) {
+					//				M = my - d; // TODO: ORIGINALY HAD THIS, BUT WHY?
+					M = mx - b;
+				} else {
+					M = Mathf.Sqrt (b * b * d * d * (-mx * mx + 2 * mx * my + b * b - my * my + d * d)) + mx * d * d + b * b * my;
+
+					float denominator = b * b + d * d;
+					if (MyMinHeap.fequal (denominator, 0)) {
+						M = Mathf.Infinity;
+					} else {
+						M /= denominator;
+					}
+				}
+
+				if (M < gridPotential.get (i, j)) {
+					gridPotential.set (i, j, M); // Set potential at this point if less than it was previously
+				}
+			}
+
+			// HEAPIFY
+			cells.heapify();
+			cells.printHeap ();
+				
+
+			// Pop Candidate with Minimal Potential
+			Vector2 idx = cells.removeMin ();
+
+//			if (gridPotential.get (idx) >= Mathf.Infinity - 100.0f) {
+//				int whywhwywhwywhwyw = 90;
+//			}
+//
+//
+//			if (idx[0] == 0 && idx[1] == 6) {
+//				int breakbreakyourheart = 90;
+//			}
+//
+
+//			if (marker.get (idx) == KNOWN) {
+//				Console.WriteLine ("Potential Fields is calculated incorrectly. WHY");
+//				continue; 
+//			}
+
+			marker.set (idx, KNOWN); // MARK
+
+			Vector2[] idxneighbors = gridPotential.getFaceNeighbors ((int) idx[0], (int) idx[1]);
+
+			// Add all neighbors to the queue if unknown
+			for (int n = 0; n < 4; n++) {
+				int ndx = marker.convertIdx(idxneighbors[n]);
+
+				if (ndx >= 0 && ndx < marker.data.Length && marker.get (ndx).Equals (UNKNOWN)) {
+					cells.insert (idxneighbors [n]);
+				}
+			}
+
+
+		}
+	}
+
+	#if OLD
+	public void constructPotentialField() {
+		Vector2 fml = marker.getIdxVec2 (box_min);
+
+		// Set goal potential
+		int goal_minx = (int)fml [0];
+		int goal_miny = (int)marker.getIdxVec2 (box_min) [1];
+		int goal_maxx = (int)marker.getIdxVec2 (box_max) [0];
+		int goal_maxy = (int)marker.getIdxVec2 (box_max) [1];
+
+		for (int i = 0; i < resx; i++) {
+			for (int j = 0; j < resz; j++) {
+				if (isWithinBounds (goal_minx, goal_miny, goal_maxx, goal_maxy, i, j)) {
+					// Set goal as known and potential as 0
 //					i >= bound_minx && i <= bound_maxx && j >= bound_miny && j <= bound_maxy;
 					gridPotential.set (i, j, 0);
 					marker.set (i, j, KNOWN);
@@ -420,7 +587,7 @@ public class MACGrid {
 			int i = (int)idx [0];
 			int j = (int)idx [1];
 
-//			if (i == 7 && j == 12) {
+//			if (i == 7 && j == 4) {
 //				int breakbreakyourheart = 10;
 //			}
 
@@ -488,10 +655,8 @@ public class MACGrid {
 
 
 		}
-
-
 	}
-
+	#endif
 
 	public Vector2[] getDirections(Vector2 ij) {
 		Vector2[] result = new Vector2[4];
