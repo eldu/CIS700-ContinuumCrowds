@@ -3,8 +3,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-public class Grid2D {
-	public float[] data;
+public class Grid2D<T> {
+	public T[] data;
 	private int resx, resz;
 
 	// -----------------------------------------------------------------------------
@@ -14,72 +14,73 @@ public class Grid2D {
 		this.resx = resx;
 		this.resz = resz;
 
-		data = new float[resx * resz];
+		data = new T[resx * resz];
 	}
 
 	// -----------------------------------------------------------------------------
 	// Getters and Setters for Data
 	// Override operators basically (TODO: Actually override operators)
 	// -----------------------------------------------------------------------------
-	public float get(int idx) {
+	public T get(int idx) {
 		if (idx < 0 || idx >= data.Length) {
-			// Out of bounds
-			return Mathf.Infinity; // TODO
+//			// Out of bounds
+//			return Mathf.Infinity; // TODO
+			return default(T);
 		} else {
 			return  data [idx];
 		}
 	}
 
-	public float get(int i , int j) {
+	public T get(int i , int j) {
 		return get (new Vector2 (i, j));
 	}
 
-	public float get(Vector2 index) {
+	public T get(Vector2 index) {
 		int idx = convertIdx(index);
 
 		if (idx < 0 || idx >= data.Length) {
 			// Out of bounds
-			return Mathf.Infinity; // TODO
+			return default(T); // TODO: To maintain generics
 		} else {
 			return  data [idx];
 		}
 	}
 
-	public void set(int idx, float value) {
+	public void set(int idx, T value) {
 		data [idx] = value;
 	}
 
-	public void set(Vector2 idx, float value) {
+	public void set(Vector2 idx, T value) {
 		data [convertIdx (idx)] = value;
 	}
 
-	public void set(int i , int j, float value) {
+	public void set(int i , int j, T value) {
 		data [convertIdx (new Vector2 (i, j))] = value;
 	}
 
-	public void add(int idx, float value) {
-		data [idx] += value;
-	}
-
-	public void add(Vector2 idx, float value) {
-		data [convertIdx (idx)] += value;
-	}
-
-	public void add(int i , int j, float value) {
-		data [convertIdx (i, j)] += value;
-	}
-
-	public void divide(int idx, float value) {
-		data [idx] /= value;
-	}
-
-	public void divide(Vector2 idx, float value) {
-		data [convertIdx (idx)] /= value;
-	}
-
-	public void divide(int i , int j, float value) {
-		data [convertIdx (i, j)] /= value;
-	}
+//	public void add(int idx, T value) {
+//		data [idx] += value;
+//	}
+//
+//	public void add(Vector2 idx, T value) {
+//		data [convertIdx (idx)] += value;
+//	}
+//
+//	public void add(int i , int j, T value) {
+//		data [convertIdx (i, j)] += value;
+//	}
+//
+//	public void divide(int idx, T value) {
+//		data [idx] /= value;
+//	}
+//
+//	public void divide(Vector2 idx, T value) {
+//		data [convertIdx (idx)] /= value;
+//	}
+//
+//	public void divide(int i , int j, T value) {
+//		data [convertIdx (i, j)] /= value;
+//	}
 
 	// -----------------------------------------------------------------------------
 	// Indexing Mania (Hash functions)
@@ -214,33 +215,33 @@ public class Grid2D {
 	// Bilinear Interpolation
 	// Input: pos = position in local space
 	// -----------------------------------------------------------------------------
-	public float bilinear(Vector2 pos) {
-		// A = 00, B = 01, C = 11, D = 10 
-		Vector2 Aidx = getA (pos);
-		Vector2 Bidx = new Vector2 (Aidx [0], Aidx [1] + 1);
-		Vector2 Cidx = new Vector2 (Aidx [0] + 1, Aidx [1] + 1);
-		Vector2 Didx = new Vector2 (Aidx [0] + 1, Aidx [1]);
-
-		Vector2 Acoord = getCoordVector2(Aidx);
-
-		float dx = pos [0] - Acoord [0];
-		float dy = pos [1] - Acoord [1];
-
-		float c00 = get(Aidx);
-		float c01 = get(Bidx);
-		float c10 = get(Didx);
-		float c11 = get(Cidx);
-
-		// Interpolate on x
-		float a = c00 * (1 - dx) + c10 * dx;
-		float b = c01 * (1 - dx) + c11 * dx;
-
-		// Interpolate on y
-		return a * (1 - dy) + b * dy;
-	}
+//	public float bilinear(Vector2 pos) {
+//		// A = 00, B = 01, C = 11, D = 10 
+//		Vector2 Aidx = getA (pos);
+//		Vector2 Bidx = new Vector2 (Aidx [0], Aidx [1] + 1);
+//		Vector2 Cidx = new Vector2 (Aidx [0] + 1, Aidx [1] + 1);
+//		Vector2 Didx = new Vector2 (Aidx [0] + 1, Aidx [1]);
+//
+//		Vector2 Acoord = getCoordVector2(Aidx);
+//
+//		float dx = pos [0] - Acoord [0];
+//		float dy = pos [1] - Acoord [1];
+//
+//		float c00 = get(Aidx);
+//		float c01 = get(Bidx);
+//		float c10 = get(Didx);
+//		float c11 = get(Cidx);
+//
+//		// Interpolate on x
+//		float a = c00 * (1.0f - dx) + c10 * dx;
+//		float b = c01 * (1.0f - dx) + c11 * dx;
+//
+//		// Interpolate on y
+//		return a * (1.0f - dy) + b * dy;
+//	}
 
 
 	public void clear() {
-		data = new float[data.Length];
+		data = new T[data.Length];
 	}
 }

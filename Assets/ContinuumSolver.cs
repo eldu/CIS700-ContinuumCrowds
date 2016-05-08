@@ -107,11 +107,11 @@ public class ContinuumSolver : MonoBehaviour {
 //		// Boundary Conditions
 //
 //		// Update Colors
-//		GetComponent<PointCloud> ().updateMesh (mGrid);
+		GetComponent<PointCloud> ().updateMesh (mGrid);
 //
 //		// Advect
-//		foreach (Agent a in agents) {
-//			Rigidbody rb = a.GetComponent<Rigidbody> ();
+		foreach (Agent a in agents) {
+			Rigidbody rb = a.GetComponent<Rigidbody> ();
 //			Vector3 whatamilookingat = rb.velocity; 
 //
 //			Vector2 localpt = mGrid.getLocalPoint (a.getWorldPosition ());
@@ -131,8 +131,8 @@ public class ContinuumSolver : MonoBehaviour {
 //			Vector2 result = -1 * flowspeed * potential.normalized;
 //
 //			rb.velocity = new Vector3(result[0], 0, result[1]);
-////			rb.velocity = new Vector3(3, 0, 3);
-//		}
+			rb.velocity = new Vector3(3, 0, 3);
+		}
 
 		mGrid.clear ();
 	}
