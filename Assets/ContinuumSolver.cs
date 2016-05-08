@@ -3,10 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 
 public class ContinuumSolver : MonoBehaviour {
-//	// private static variables
-//	private static int KNOWN = 1;
-//	private static int UNKNOWN = 0;
-
 	// Set up agents
 	public GameObject original_agent;
 	private Agent[] agents;
@@ -15,8 +11,6 @@ public class ContinuumSolver : MonoBehaviour {
 
 	// Set up goal
 	public GameObject goal;
-//	private Vector2 goal_min;
-//	private Vector2 goal_max;
 
 	// Set up obstacles
 //	public Obstacle[] obstacles;
@@ -25,6 +19,7 @@ public class ContinuumSolver : MonoBehaviour {
 	private Vector2 max = new Vector2(50, 50); // Top right corner
 	private Vector2 resolution = new Vector2(20, 20);
 
+	// MACGRID
 	private MACGrid mGrid;
 
 	// TODO: TINKER WITH THESE PARAMETERS
@@ -56,10 +51,6 @@ public class ContinuumSolver : MonoBehaviour {
 
 		// Initalize the MAC Grid
 		mGrid = new MACGrid(min, max, resolution, goal.GetComponent<BoxCollider>());
-
-//		// Set Goals
-//		goal_min = mGrid.getLocalPoint(goal.GetComponent<BoxCollider>().center - 0.5f * goal.GetComponent<BoxCollider>().size);
-//		goal_max = mGrid.getLocalPoint(goal.GetComponent<BoxCollider>().center + 0.5f * goal.GetComponent<BoxCollider>().size);
 	}
 
 	// After everything has been initalized

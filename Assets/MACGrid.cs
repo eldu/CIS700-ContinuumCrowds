@@ -72,14 +72,6 @@ public class MACGrid {
 			max = min + cellWidth * resolution;
 		}
 
-		// Set up Goal
-		this.box = goal;
-		box_min = getLocalPoint(box.GetComponent<Transform>().position - 0.5f * box.GetComponent<Transform>().localScale);
-		box_max = getLocalPoint(box.GetComponent<Transform>().position + 0.5f * box.GetComponent<Transform>().localScale);
-		goal_minx = marker.getIdxVec2 (box_min) [0];
-		goal_miny = marker.getIdxVec2 (box_min) [1];
-		goal_maxx = marker.getIdxVec2 (box_max) [0];
-		goal_maxy = marker.getIdxVec2 (box_max) [1];
 
 		// Initialization of Grids
 		gridD = new Grid2D<float>(resx, resz);
@@ -98,6 +90,15 @@ public class MACGrid {
 		gridCost [2] = new Grid2D<float> (resx + 1, resz);
 		gridRose [3] = new Grid2D<float> (resx, resz + 1);
 		gridCost [3] = new Grid2D<float> (resx, resz + 1);
+
+		// Set up Goal
+		this.box = goal;
+		box_min = getLocalPoint(box.GetComponent<Transform>().position - 0.5f * box.GetComponent<Transform>().localScale);
+		box_max = getLocalPoint(box.GetComponent<Transform>().position + 0.5f * box.GetComponent<Transform>().localScale);
+		goal_minx = (int)marker.getIdxVec2 (box_min) [0];
+		goal_miny = (int)marker.getIdxVec2 (box_min) [1];
+		goal_maxx = (int)marker.getIdxVec2 (box_max) [0];
+		goal_maxy = (int)marker.getIdxVec2 (box_max) [1];
 	}
 
 	public Vector2 getLocalPoint(Vector3 world) {
@@ -350,36 +351,76 @@ public class MACGrid {
 				int i = (int)c [0];
 				int j = (int)c [1];
 
-				// Get Neighbors
+				// Get Neighbors Potential
 				Vector2[] neighbors = gridPotential.getFaceNeighbors (i, j);
 				float mx, my;
-				int x, y;
+				float b, d; // Min cost in directions x and y
 
+				int n0idx = gridPotential.getIdx (neighbors [0]);
+				int n1idx = gridPotential.getIdx (neighbors [1]);
+				int n2idx = gridPotential.getIdx (neighbors [2]);
+				int n3idx = gridPotential.getIdx (neighbors [3]);
 
-				if (gridPotential.get (neighbors [0]) + gridCost [0].get (neighbors [0]) <
-					gridPotential.get (neighbors [2]) + gridCost [2].get (neighbors [2])) {
-					mx = gridPotential.get (neighbors [0]) + gridCost [0].get (neighbors [0]);
-					x = 0;
+				float p0, p1, p2, p3; // Potentials of neighbors
+				float c0, c1, c2, c3; // Costs of neighbors in same neighbor direction
+
+				if (n0idx < 0) {
+					p0 = Mathf.Infinity;
+					c0 = Mathf.Infinity;
 				} else {
-					mx = gridPotential.get (neighbors [2]) + gridCost [2].get (neighbors [2]);
-					x = 2;
+					p0 = gridPotential.get (n0idx);
+					c0 = gridCost [0].get (n0idx);
 				}
 
-				if (gridPotential.get (neighbors [1]) + gridCost [1].get (neighbors [1]) <
-					gridPotential.get (neighbors [3]) + gridCost [3].get (neighbors [3])) {
-					my = gridPotential.get (neighbors [1]) + gridCost [1].get (neighbors [1]);
-					y = 1;
+				if (n1idx < 0) {
+					p1 = Mathf.Infinity;
+					c1 = Mathf.Infinity;
 				} else {
-					my = gridPotential.get (neighbors [3]) + gridCost [3].get (neighbors [3]);
-					y = 3;
+					p1 = gridPotential.get (n1idx);
+					c1 = gridCost [1].get (n1idx);
+				}
+
+				if (n2idx < 0) {
+					p2 = Mathf.Infinity;
+					c2 = Mathf.Infinity;
+				} else {
+					p2 = gridPotential.get (n2idx);
+					c2 = gridCost [2].get (n2idx);
+				}
+
+				if (n3idx < 0) {
+					p3 = Mathf.Infinity;
+					c3 = Mathf.Infinity;
+				} else {
+					p3 = gridPotential.get (n3idx);
+					c3 = gridCost [3].get (n3idx);
+				}
+
+				// Calculate mx and my
+				// mx = argmin{potential_i + cost from m to i}, in W & E directions
+				// my = argmin{potential_i + cost from m to i}, in N & S directions)
+				if (p0 + c0 < p2 + c2) {
+					mx = p0 + c0;
+					b = c0;
+				} else {
+					mx = p2 + c2;
+					b = c2;
+				}
+
+				if (p1 + c1 < p3 + c3) {
+					my = p1 + c1;
+					d = c1;
+				} else {
+					my = p3 + c3;
+					d = c3;
 				}
 
 				// Wolfram Alpha Check
-				float b = gridCost [x].get (neighbors [x]);
-				float d = gridCost [y].get (neighbors [y]);
+				// Solve for x in Equation 11 (in paper)
 				float M = 0;
 				if (mx >= Mathf.Infinity - 100 && my >= Mathf.Infinity - 100) {
 					// Both are infinity, shouldn't happen.
+					// Basicallu
 					Console.WriteLine("mx and my are both infinity");
 				} else if (mx >= Mathf.Infinity - 100) {
 					//				M = mx - d; // TODO: ORIGINALY HAD THIS, BUT WHY?
@@ -405,6 +446,7 @@ public class MACGrid {
 
 			// HEAPIFY
 			cells.heapify();
+			bool what = cells.isSorted ();
 
 			// Pop Candidate with Minimal Potential
 			Vector2 idx = cells.removeMin ();

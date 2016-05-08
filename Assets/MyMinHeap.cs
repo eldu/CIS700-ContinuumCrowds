@@ -148,7 +148,12 @@ public class MyMinHeap {
 		return diff / (Mathf.Abs (a) + Mathf.Abs (b)) < epsilon;
 	}
 
+	// TODO: Add out of range as well
 	public Vector2 get(int i) {
 		return heap [i];
+	}
+
+	public int getSize() {
+		return size;
 	}
 }
