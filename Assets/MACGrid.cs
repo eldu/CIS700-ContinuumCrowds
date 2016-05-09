@@ -309,7 +309,7 @@ public class MACGrid {
 
 		// Add Candidate Cells to the Stack
 		//		Stack<Vector2> cells = new Stack<Vector2>();
-		MyMinHeap cells = new MyMinHeap (this);
+		MyMinHeap cells = new MyMinHeap ();
 
 		// UNKNOWN Cells adjcent to KNOWN cells are included in the list of CANDIDATE CELLS
 		// DO not include corners, only face borders 
@@ -321,35 +321,39 @@ public class MACGrid {
 		// minx to maxx
 		if (border_miny < goal_miny) {
 			for (int i = border_minx + 1; i < border_maxx; i++) {
-				cells.insert (new Vector2 (i, border_miny));
+				float value = gridPotential.get (i, border_miny);
+				cells.insert (new Node (i, border_miny, value));
 			}
 		}
 
 		if (border_maxy > goal_maxy) {
 			for (int i = border_minx + 1; i < border_maxx; i++) {
-				cells.insert (new Vector2 (i, border_maxy));
+				float value = gridPotential.get (i, border_maxy);
+				cells.insert (new Node (i, border_maxy, value));
 			}
 		}
 
 		if (border_minx < goal_minx) {
 			for (int j = border_miny + 1; j < border_maxy; j++) {
-				cells.insert (new Vector2 (border_minx, j));
+				float value = gridPotential.get (border_minx, j);
+				cells.insert (new Node (border_minx, j, value));
 			}
 		}
 
 		if (border_maxx > goal_maxx) {
 			for (int j = border_miny + 1; j < border_maxy; j++) {
-				cells.insert (new Vector2 (border_maxx, j));
+				float value = gridPotential.get (border_maxx, j);
+				cells.insert (new Node (border_maxx, j, value));
 			}
 		}
 
 		// Main Loop
 		while (!cells.isEmpty()) { // While not empty
 			for (int w = 1; w <= cells.getSize(); w++) {
-				Vector2 c = cells.get(w);
+				Node c = cells.get(w);
 					
-				int i = (int)c [0];
-				int j = (int)c [1];
+				int i = c.i;
+				int j = c.j;
 
 				// Get Neighbors Potential
 				Vector2[] neighbors = gridPotential.getFaceNeighbors (i, j);
@@ -432,7 +436,7 @@ public class MACGrid {
 					M = Mathf.Sqrt (b * b * d * d * (-mx * mx + 2 * mx * my + b * b - my * my + d * d)) + mx * d * d + b * b * my;
 
 					float denominator = b * b + d * d;
-					if (MyMinHeap.fequal (denominator, 0)) {
+					if (Node.fequal (denominator, 0.0f)) {
 						M = Mathf.Infinity;
 					} else {
 						M /= denominator;
@@ -453,18 +457,19 @@ public class MACGrid {
 			}
 
 			// Pop Candidate with Minimal Potential
-			Vector2 idx = cells.removeMin ();
+			Node idx = cells.removeMin ();
 
-			marker.set (idx, KNOWN); // MARK
+			marker.set (idx.i, idx.j, KNOWN); // MARK
 
-			Vector2[] idxneighbors = gridPotential.getFaceNeighbors ((int) idx[0], (int) idx[1]);
+			Vector2[] idxneighbors = gridPotential.getFaceNeighbors (idx.i, idx.j);
 
 			// Add all neighbors to the queue if unknown
 			for (int n = 0; n < 4; n++) {
 				int ndx = marker.convertIdx(idxneighbors[n]);
 
 				if (ndx >= 0 && ndx < marker.data.Length && marker.get (ndx).Equals (UNKNOWN)) {
-					cells.insert (idxneighbors [n]);
+					float value = gridPotential.get (idxneighbors [n]);
+					cells.insert (new Node((int) idxneighbors [n].x, (int) idxneighbors[n].y, value));
 				}
 			}
 

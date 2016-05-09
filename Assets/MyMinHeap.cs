@@ -7,21 +7,16 @@ public class MyMinHeap {
 	private static int CAPACITY = 400; // TODO: Make this useful
 
 	private int size;
-	private Vector2[] heap;
+	private Node[] heap;
 
-
-	private MACGrid g;
-//	public List<Vector2> items = new List<Vector2>();
-
-	public MyMinHeap (MACGrid grid) {
-		g = grid;
+	public MyMinHeap () {
 		size = 0;
-		heap = new Vector2[CAPACITY];
+		heap = new Node[CAPACITY];
 	}
 
-	public MyMinHeap (Vector2[] arr) {
+	public MyMinHeap (Node[] arr) {
 		size = arr.Length;
-		heap = new Vector2[arr.Length];
+		heap = new Node[arr.Length];
 	}
 
 	// Rearranges array in ascending order 
@@ -30,10 +25,6 @@ public class MyMinHeap {
 		for (int k = N / 2; k > 1; k--) {
 			sink (k, N);
 		} 
-//		while (N > 1) { 
-//			swap (1, N--);
-//			sink (1, N);
-//		}
 	}
 
 
@@ -41,21 +32,21 @@ public class MyMinHeap {
 		while (2 * k <= N) {
 			int j = 2 * k;
 			// Get which child is smaller
-			if (j < N && compare (heap[j], heap[j + 1]) > 0)
+			if (j < N && heap[j].compare(heap[j + 1]) > 0)
 				j++;
 
-			float kk = g.gridPotential.get (heap [k]);
-			float jj = g.gridPotential.get (heap [j]);
+			float kk = heap [k].value;
+			float jj = heap [j].value;
 
 			// If Parent k < j, then break, otherwise swap with smaller
-			if (compare (heap[k], heap[j]) < 0)
+			if (heap[k].compare(heap[j]) < 0)
 				break;
 			swap (k, j);
 			k = j;
 		}
 	}
 
-	public void insert(Vector2 a) {
+	public void insert(Node a) {
 		if (size == heap.Length - 1)
 			doubleSize ();
 
@@ -64,12 +55,12 @@ public class MyMinHeap {
 	}
 
 	public void doubleSize() {
-		Vector2[] old = heap;
-		heap = new Vector2[heap.Length * 2];
+		Node[] old = heap;
+		heap = new Node[heap.Length * 2];
 		old.CopyTo (heap, 0);
 	}
 
-	public Vector2 peek() {
+	public Node peek() {
 		if (size == 0) {
 			throw new System.InvalidOperationException ("Empty Heap");
 		}
@@ -80,12 +71,12 @@ public class MyMinHeap {
 		return size == 0;
 	}
 
-	public Vector2 removeMin() {
+	public Node removeMin() {
 		if (size == 0) {
 			throw new System.InvalidOperationException ("Empty Heap");
 		}
 
-		Vector2 min = heap [1]; // Save for return
+		Node min = heap [1]; // Save for return
 		heap [1] = heap [size--];
 
 		if (size > 1) {
@@ -107,12 +98,12 @@ public class MyMinHeap {
 			int child = parent * 2;
 
 			// If the parent is greater than the child, then false
-			if (compare (heap [parent], heap [child]) > 0) {
+			if (heap [parent].compare(heap [child]) > 0) {
 				return false;
 			}
 				
 			if (child < N) {
-				if (compare (heap [parent], heap [child + 1]) > 0) {
+				if (heap [parent].compare (heap [child + 1]) > 0) {
 					return false;
 				}
 			}
@@ -124,7 +115,7 @@ public class MyMinHeap {
 
 	// Reheapify if the heap order is violated if parent > child
 	public void swim(int k) {
-		while (k > 1 && compare (heap [k / 2], heap[k]) > 0) {
+		while (k > 1 && heap [k / 2].compare (heap[k]) > 0) {
 			swap (k, k / 2);
 			k = k / 2;
 		}
@@ -132,22 +123,51 @@ public class MyMinHeap {
 	
 	// Switches elements at different indicies
 	public void swap(int a, int b) {
-		Vector2 temp = heap [a];
+		Node temp = heap [a];
 		heap [a] = heap [b];
 		heap [b] = temp;
 	}
 
 
 	// Compare based on potentials
-	public float compare(Vector2 a, Vector2 b) {
-		float pa = g.gridPotential.get (a);
-		float pb = g.gridPotential.get(b);
+//	public float compare(Vector2 a, Vector2 b) {
+//		float pa = g.gridPotential.get (a);
+//		float pb = g.gridPotential.get (b);
+//
+//		if (fequal (pa, pb)) {
+//			return 0;
+//		}
+//
+//		return pa - pb;
+	//	}
 
-		if (fequal (pa, pb)) {
+	// TODO: Add out of range as well
+	public Node get(int i) {
+		return heap [i];
+	}
+
+	public int getSize() {
+		return size;
+	}
+}
+
+public class Node {
+	public int i;
+	public int j;
+	public float value;
+
+	public Node(int x, int z, float v) {
+		i = x;
+		j = z;
+		value = v;
+	}
+
+	public float compare(Node b) {
+		if (fequal (this.value, b.value)) {
 			return 0;
 		}
 
-		return pa - pb;
+		return this.value - b.value;
 	}
 
 	public static bool fequal(float a, float b) {
@@ -163,14 +183,5 @@ public class MyMinHeap {
 		}
 
 		return diff / (Mathf.Abs (a) + Mathf.Abs (b)) < epsilon;
-	}
-
-	// TODO: Add out of range as well
-	public Vector2 get(int i) {
-		return heap [i];
-	}
-
-	public int getSize() {
-		return size;
 	}
 }
