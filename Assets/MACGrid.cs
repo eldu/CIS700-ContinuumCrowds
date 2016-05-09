@@ -72,7 +72,6 @@ public class MACGrid {
 			max = min + cellWidth * resolution;
 		}
 
-
 		// Initialization of Grids
 		gridD = new Grid2D<float>(resx, resz);
 		gridAverageVelocity = new Grid2D<Vector2>(resx, resz);
@@ -301,14 +300,13 @@ public class MACGrid {
 					gridPotential.set (i, j, 0);
 					marker.set (i, j, KNOWN);
 				} else {
-					// Set all other squares as infinity for now.
+					// Set all other squares as infinity for now
 					gridPotential.set (i, j, Mathf.Infinity);
 				}
 			}
 		}
 
 		// Add Candidate Cells to the Stack
-		//		Stack<Vector2> cells = new Stack<Vector2>();
 		MyMinHeap cells = new MyMinHeap ();
 
 		// UNKNOWN Cells adjcent to KNOWN cells are included in the list of CANDIDATE CELLS
@@ -321,160 +319,152 @@ public class MACGrid {
 		// minx to maxx
 		if (border_miny < goal_miny) {
 			for (int i = border_minx + 1; i < border_maxx; i++) {
-				float value = gridPotential.get (i, border_miny);
-				cells.insert (new Node (i, border_miny, value));
+				Node toInsert = calculatePotential (i, border_miny);
+				cells.insert (toInsert);
 			}
 		}
 
 		if (border_maxy > goal_maxy) {
 			for (int i = border_minx + 1; i < border_maxx; i++) {
-				float value = gridPotential.get (i, border_maxy);
-				cells.insert (new Node (i, border_maxy, value));
+				Node toInsert = calculatePotential (i, border_maxy);
+				cells.insert (toInsert);
 			}
 		}
 
 		if (border_minx < goal_minx) {
 			for (int j = border_miny + 1; j < border_maxy; j++) {
-				float value = gridPotential.get (border_minx, j);
-				cells.insert (new Node (border_minx, j, value));
+				Node toInsert = calculatePotential (border_minx, j);
+				cells.insert (toInsert);
 			}
 		}
 
 		if (border_maxx > goal_maxx) {
 			for (int j = border_miny + 1; j < border_maxy; j++) {
-				float value = gridPotential.get (border_maxx, j);
-				cells.insert (new Node (border_maxx, j, value));
+				Node toInsert = calculatePotential (border_maxx, j);
+				cells.insert (toInsert);
 			}
 		}
 
 		// Main Loop
 		while (!cells.isEmpty()) { // While not empty
-			for (int w = 1; w <= cells.getSize(); w++) {
-				Node c = cells.get(w);
-					
-				int i = c.i;
-				int j = c.j;
-
-				// Get Neighbors Potential
-				Vector2[] neighbors = gridPotential.getFaceNeighbors (i, j);
-				float mx, my;
-				float b, d; // Min cost in directions x and y
-
-				int n0idx = gridPotential.getIdx (neighbors [0]);
-				int n1idx = gridPotential.getIdx (neighbors [1]);
-				int n2idx = gridPotential.getIdx (neighbors [2]);
-				int n3idx = gridPotential.getIdx (neighbors [3]);
-
-				float p0, p1, p2, p3; // Potentials of neighbors
-				float c0, c1, c2, c3; // Costs of neighbors in same neighbor direction
-
-				if (n0idx < 0) {
-					p0 = Mathf.Infinity;
-					c0 = Mathf.Infinity;
-				} else {
-					p0 = gridPotential.get (n0idx);
-					c0 = gridCost [0].get (n0idx);
-				}
-
-				if (n1idx < 0) {
-					p1 = Mathf.Infinity;
-					c1 = Mathf.Infinity;
-				} else {
-					p1 = gridPotential.get (n1idx);
-					c1 = gridCost [1].get (n1idx);
-				}
-
-				if (n2idx < 0) {
-					p2 = Mathf.Infinity;
-					c2 = Mathf.Infinity;
-				} else {
-					p2 = gridPotential.get (n2idx);
-					c2 = gridCost [2].get (n2idx);
-				}
-
-				if (n3idx < 0) {
-					p3 = Mathf.Infinity;
-					c3 = Mathf.Infinity;
-				} else {
-					p3 = gridPotential.get (n3idx);
-					c3 = gridCost [3].get (n3idx);
-				}
-
-				// Calculate mx and my
-				// mx = argmin{potential_i + cost from m to i}, in W & E directions
-				// my = argmin{potential_i + cost from m to i}, in N & S directions)
-				if (p0 + c0 < p2 + c2) {
-					mx = p0 + c0;
-					b = c0;
-				} else {
-					mx = p2 + c2;
-					b = c2;
-				}
-
-				if (p1 + c1 < p3 + c3) {
-					my = p1 + c1;
-					d = c1;
-				} else {
-					my = p3 + c3;
-					d = c3;
-				}
-
-				// Wolfram Alpha Check
-				// Solve for x in Equation 11 (in paper)
-				float M = 0;
-				if (mx >= Mathf.Infinity - 100 && my >= Mathf.Infinity - 100) {
-					// Both are infinity, shouldn't happen.
-					// Basicallu
-					Console.WriteLine("mx and my are both infinity");
-				} else if (mx >= Mathf.Infinity - 100) {
-					//				M = mx - d; // TODO: ORIGINALY HAD THIS, BUT WHY?
-					M = my - d;
-				} else if (my >= Mathf.Infinity - 100) {
-					//				M = my - d; // TODO: ORIGINALY HAD THIS, BUT WHY?
-					M = mx - b;
-				} else {
-					M = Mathf.Sqrt (b * b * d * d * (-mx * mx + 2 * mx * my + b * b - my * my + d * d)) + mx * d * d + b * b * my;
-
-					float denominator = b * b + d * d;
-					if (Node.fequal (denominator, 0.0f)) {
-						M = Mathf.Infinity;
-					} else {
-						M /= denominator;
-					}
-				}
-
-				if (M < gridPotential.get (i, j)) {
-					gridPotential.set (i, j, M); // Set potential at this point if less than it was previously
-				}
-			}
-
-			// HEAPIFY
-			cells.heapify();
-			bool what = cells.isMinHeap ();
-
-			if (what == false) {
-				Console.WriteLine ("Not a heap");
-			}
-
 			// Pop Candidate with Minimal Potential
 			Node idx = cells.removeMin ();
 
-			marker.set (idx.i, idx.j, KNOWN); // MARK
+			// Skip if known
+			if (marker.get (idx.i, idx.j) == KNOWN) {
+				continue;
+			}
 
+			// Mark as known
+			marker.set (idx.i, idx.j, KNOWN); 
+
+			// Set Potential Value in Grid
+			gridPotential.set (idx.i, idx.j, idx.value);
+
+			// Get Face Neighbors
 			Vector2[] idxneighbors = gridPotential.getFaceNeighbors (idx.i, idx.j);
-
 			// Add all neighbors to the queue if unknown
 			for (int n = 0; n < 4; n++) {
 				int ndx = marker.convertIdx(idxneighbors[n]);
-
 				if (ndx >= 0 && ndx < marker.data.Length && marker.get (ndx).Equals (UNKNOWN)) {
-					float value = gridPotential.get (idxneighbors [n]);
-					cells.insert (new Node((int) idxneighbors [n].x, (int) idxneighbors[n].y, value));
+
+					Node toInsert = calculatePotential ((int) idxneighbors [n].x, (int) idxneighbors [n].y);
+					cells.insert (toInsert);
 				}
 			}
-
-
 		}
+	}
+
+	public Node calculatePotential(int i, int j) {
+		// Get Neighbors Potential
+		Vector2[] neighbors = gridPotential.getFaceNeighbors (i, j);
+		float mx, my;
+		float b, d; // Min cost in directions x and y
+
+		int n0idx = gridPotential.getIdx (neighbors [0]);
+		int n1idx = gridPotential.getIdx (neighbors [1]);
+		int n2idx = gridPotential.getIdx (neighbors [2]);
+		int n3idx = gridPotential.getIdx (neighbors [3]);
+
+		float p0, p1, p2, p3; // Potentials of neighbors
+		float c0, c1, c2, c3; // Costs of neighbors in same neighbor direction
+
+		if (n0idx < 0) {
+			p0 = Mathf.Infinity;
+			c0 = Mathf.Infinity;
+		} else {
+			p0 = gridPotential.get (n0idx);
+			c0 = gridCost [0].get (n0idx);
+		}
+
+		if (n1idx < 0) {
+			p1 = Mathf.Infinity;
+			c1 = Mathf.Infinity;
+		} else {
+			p1 = gridPotential.get (n1idx);
+			c1 = gridCost [1].get (n1idx);
+		}
+
+		if (n2idx < 0) {
+			p2 = Mathf.Infinity;
+			c2 = Mathf.Infinity;
+		} else {
+			p2 = gridPotential.get (n2idx);
+			c2 = gridCost [2].get (n2idx);
+		}
+
+		if (n3idx < 0) {
+			p3 = Mathf.Infinity;
+			c3 = Mathf.Infinity;
+		} else {
+			p3 = gridPotential.get (n3idx);
+			c3 = gridCost [3].get (n3idx);
+		}
+
+		// Calculate mx and my
+		// mx = argmin{potential_i + cost from m to i}, in W & E directions
+		// my = argmin{potential_i + cost from m to i}, in N & S directions)
+		if (p0 + c0 < p2 + c2) {
+			mx = p0 + c0;
+			b = c0;
+		} else {
+			mx = p2 + c2;
+			b = c2;
+		}
+
+		if (p1 + c1 < p3 + c3) {
+			my = p1 + c1;
+			d = c1;
+		} else {
+			my = p3 + c3;
+			d = c3;
+		}
+
+		// Wolfram Alpha Check
+		// Solve for x in Equation 11 (in paper)
+		float M = 0;
+		if (mx >= Mathf.Infinity - 100 && my >= Mathf.Infinity - 100) {
+			// Both are infinity, shouldn't happen.
+			// Basicallu
+			Console.WriteLine("mx and my are both infinity");
+		} else if (mx >= Mathf.Infinity - 100) {
+			//				M = mx - d; // TODO: ORIGINALY HAD THIS, BUT WHY?
+			M = my - d;
+		} else if (my >= Mathf.Infinity - 100) {
+			//				M = my - d; // TODO: ORIGINALY HAD THIS, BUT WHY?
+			M = mx - b;
+		} else {
+			M = Mathf.Sqrt (b * b * d * d * (-mx * mx + 2 * mx * my + b * b - my * my + d * d)) + mx * d * d + b * b * my;
+
+			float denominator = b * b + d * d;
+			if (Node.fequal (denominator, 0.0f)) {
+				M = Mathf.Infinity;
+			} else {
+				M /= denominator;
+			}
+		}
+
+		return new Node (i, j, M);
 	}
 
 	public Vector2[] getDirections(Vector2 ij) {

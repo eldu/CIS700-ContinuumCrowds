@@ -14,9 +14,19 @@ public class MyMinHeap {
 		heap = new Node[CAPACITY];
 	}
 
-	public MyMinHeap (Node[] arr) {
-		size = arr.Length;
-		heap = new Node[arr.Length];
+	public MyMinHeap (List<Node> arr) {
+		size = arr.Count ;
+		heap = new Node[CAPACITY];
+
+		// Copy Over
+		for (int i = 0; i < arr.Count; i++) {
+			heap [i + 1] = arr [i];
+		}
+
+		heapify ();
+
+		if (isMinHeap()) {
+		}
 	}
 
 	// Rearranges array in ascending order 
@@ -270,6 +280,7 @@ public class MyMinHeap {
 			Console.WriteLine ("Failed");
 		}
 
+		// Gave Error as it should because tried to remove from empty heap
 //		Node min10 = removeMin ();
 //		Console.WriteLine ("Removed: " + min10.value);
 //		if (!isMinHeap()) {

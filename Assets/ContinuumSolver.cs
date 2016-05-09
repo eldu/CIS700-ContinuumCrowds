@@ -93,11 +93,7 @@ public class ContinuumSolver : MonoBehaviour {
 		mGrid.UpdateVelocityAndCostFields ();
 
 		// Dynamic Potentional Field Construction
-//		mGrid.constructPotentialField();
-
-		// Test minheap
-		MyMinHeap test = new MyMinHeap();
-		test.TestMyMinHeap ();
+		mGrid.constructPotentialField();
 
 //
 //		// Boundary Conditions
