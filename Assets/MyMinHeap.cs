@@ -30,19 +30,25 @@ public class MyMinHeap {
 		for (int k = N / 2; k > 1; k--) {
 			sink (k, N);
 		} 
-		while (N > 1) { 
-			swap (1, N--);
-			sink (1, N);
-		}
+//		while (N > 1) { 
+//			swap (1, N--);
+//			sink (1, N);
+//		}
 	}
 
 
 	public void sink(int k, int N) {
 		while (2 * k <= N) {
 			int j = 2 * k;
-			if (j < N && compare (heap[j], heap[j + 1]) < 0)
+			// Get which child is smaller
+			if (j < N && compare (heap[j], heap[j + 1]) > 0)
 				j++;
-			if (compare (heap[k], heap[j]) > 0)
+
+			float kk = g.gridPotential.get (heap [k]);
+			float jj = g.gridPotential.get (heap [j]);
+
+			// If Parent k < j, then break, otherwise swap with smaller
+			if (compare (heap[k], heap[j]) < 0)
 				break;
 			swap (k, j);
 			k = j;
@@ -90,18 +96,29 @@ public class MyMinHeap {
 	}
 
 
-	public bool isSorted() {
+	public bool isMinHeap() {
 		// if small size then already sorted
 		if (size <= 1) {
 			return true;
 		}
 
-		for (int i = 2; i <= size; i++) {
-			if (compare(heap[i], heap[i-1]) > 0) {
+		int N = size;
+		for (int parent = 1; parent <= N / 2; parent++) {
+			int child = parent * 2;
+
+			// If the parent is greater than the child, then false
+			if (compare (heap [parent], heap [child]) > 0) {
 				return false;
+			}
+				
+			if (child < N) {
+				if (compare (heap [parent], heap [child + 1]) > 0) {
+					return false;
+				}
 			}
 		}
 
+		// Made it through! This is in fact a min heap! :)
 	 	return true;
 	}
 

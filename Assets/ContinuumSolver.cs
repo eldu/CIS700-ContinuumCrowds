@@ -122,7 +122,10 @@ public class ContinuumSolver : MonoBehaviour {
 //			Vector2 result = -1 * flowspeed * potential.normalized;
 //
 //			rb.velocity = new Vector3(result[0], 0, result[1]);
+//			Vector3 oldAngle = rb.rotation.eulerAngles;
 			rb.velocity = new Vector3(3, 0, 3);
+//			Vector3 newAngle = rb.rotation.eulerAngles;
+//			float nothing = 4.5f;
 		}
 
 		mGrid.clear ();

@@ -446,7 +446,11 @@ public class MACGrid {
 
 			// HEAPIFY
 			cells.heapify();
-			bool what = cells.isSorted ();
+			bool what = cells.isMinHeap ();
+
+			if (what == false) {
+				Console.WriteLine ("Not a heap");
+			}
 
 			// Pop Candidate with Minimal Potential
 			Vector2 idx = cells.removeMin ();
