@@ -96,6 +96,8 @@ public class ContinuumSolver : MonoBehaviour {
 		mGrid.constructPotentialField();
 
 //
+		float whattssf = Mathf.Max(4.0f, 5.0f/0.0f);
+
 //		// Boundary Conditions
 //
 //		// Update Colors

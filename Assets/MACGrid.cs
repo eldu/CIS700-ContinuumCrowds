@@ -489,8 +489,16 @@ public class MACGrid {
 		return Mathf.Equals(marker.get (i, j), 1); // Known
 	}
 		
-	bool isWithinBounds(int bound_minx, int bound_miny, int bound_maxx, int bound_maxy, int i, int j) {
+	private bool isWithinBounds(int bound_minx, int bound_miny, int bound_maxx, int bound_maxy, int i, int j) {
 		return i >= bound_minx && i <= bound_maxx && j >= bound_miny && j <= bound_maxy;
 	}
+
+	// Solves the quadrative formula a^2x + bx + c = 0
+	// Sign = positivity or negativity of the equation
+	private float solveQuadratic(float a, float b, float c, float sign) {
+		return (-b + sign * Mathf.Sqrt (b * b - 4.0f * a * c)) / (2.0f * a);
+	}
+
+
 
 }
