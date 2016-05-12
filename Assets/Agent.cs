@@ -15,7 +15,7 @@ public class Agent : MonoBehaviour {
 	public float baseOffset = 0.0f;
 
 	// TODO
-	public float MAX_SPEED = 3.5f; // Maximum movement speed when following a path
+	public float MAX_SPEED = 2.0f; // Maximum movement speed when following a path
 	public float MAX_ANGULAR_SPEED = 120.0f; // maximum turning speed in (deg/s) while following a path
 	public float MAX_ACCELERATION = 8.0f; // max acceleration of an agent as it follows a path, given in units/sec^2
 	public float STOPPING_DISTANCE = 0.0f; // Stop within this distance form the target position
@@ -43,7 +43,7 @@ public class Agent : MonoBehaviour {
 	}
 
 	public void setVelocity(Vector2 velocity, float dt) {
-		Vector2 v = Vector2.ClampMagnitude (velocity, MAX_SPEED + 20);
+		Vector2 v = Vector2.ClampMagnitude (velocity, MAX_SPEED);
 //		Vector2 direction = velocity.normalized;
 
 		Vector3 result = new Vector3 (v [0], GetComponent<Rigidbody> ().velocity.y, v [1]);

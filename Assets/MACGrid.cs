@@ -42,12 +42,12 @@ public class MACGrid {
 	// Tinkering Parameters
 	public float lamda = 1.8f; // Density
 
-	public float MAX_SPEED = 1.0f; // m/s
+	public float MAX_SPEED = 3.0f; // m/s
 	public float MIN_SPEED = 0.5f; // m/s
 
 	public float MIN_DENSITY = 0.1f;
 //	private float density = (0.5f) ^ lamda;
-	public float MAX_DENSITY = 0.8f;
+	public float MAX_DENSITY = 2.8f;
 
 	public MACGrid (Vector2 min, Vector2 max, Vector2 resolution, BoxCollider goal) {
 //		TODO: Grab components form the transform component to set min and max
@@ -137,7 +137,7 @@ public class MACGrid {
 		}
 	}
 
-	public void splat(List<Agent> agents) {
+	public void splat(Agent[] agents) {
 		foreach (Agent a in agents) {
 			// the density field must be continuous with respect to the location of the people
 			// each person should contribute no less than p to any neighboring cell//
@@ -273,43 +273,12 @@ public class MACGrid {
 		}
 	}
 
-	// TODO: Move things into Helper function for UpdateVelocityFields
-//	public float getSpeed (int i, int j, Vector2 n) {
-////		float r = 0.5f;
-//		float p = gridD.get(i, j);
-//
-////		Vector2 localstep = localpt + r * n; // 
-////		float density = getDensity (localstep);
-//
-//		// TODO: Check boundary conditions
-//		// TODO: Incorporate terrain heightfield
-//
-//		float fx;
-//		float ft = MAX_SPEED; // Topological Speed, Ignore Terrain
-//		float fv = Vector2.Dot(new Vector2(getAverageVelocityX(localstep), getAverageVelocityZ(localstep)), n); // flow speed
-//
-//		if (p < MIN_DENSITY) {
-//			// Low density
-//			fx = ft;
-//		} else if (p < MAX_DENSITY) {
-//			// Middle density
-//			fx = ft + (density - MIN_DENSITY) / (MAX_DENSITY - MIN_DENSITY) * (fv - ft);
-//		} else {
-//			// High Density
-//			fx = fv;
-//		}
-//
-//		return fx;
-//	}
-
 	// Update Velocity and Unit Cost Field
 	public float PATH_LENGTH_WEIGHT = 0.5f;
 	public float TIME_WEIGHT = 0.8f;
 	public float DISCOMFORT_WEIGHT = 0.5f;
 
-	public void UpdateVelocityAndCostFields() {
-
-
+	public void UpdateSpeedAndCostFields() {
 		float fv; // Flow speed
 		float p; // Pressure
 		float f; // speed field computation
@@ -325,7 +294,7 @@ public class MACGrid {
 				p = gridD.get (i + 1, j);
 				if (p < MIN_DENSITY) {
 					// Low density
-					f = ft;
+					f = ft; // MAX Speed
 				} else if (p < MAX_DENSITY) {
 					// Middle density
 					f = ft + (p - MIN_DENSITY) / (MAX_DENSITY - MIN_DENSITY) * (fv - ft);
@@ -351,7 +320,8 @@ public class MACGrid {
 					f = fv;
 				}
 				gridSpeed [1].set (i, j, f);
-				c = PATH_LENGTH_WEIGHT * f + TIME_WEIGHT + DISCOMFORT_WEIGHT * distance(dirs[1]) / f;
+
+				c = PATH_LENGTH_WEIGHT * f + TIME_WEIGHT + DISCOMFORT_WEIGHT * distance (dirs [1]) / f;
 				gridCost [1].set (i, j, c);
 
 				// West
@@ -694,6 +664,9 @@ public class MACGrid {
 
 		float vx = 0.5f * (v0 + v2) - v2; 
 		float vz = 0.5f * (v1 + v3) - v3;
+
+//		float vx = Mathf.Lerp (0.5f, v0, v2);
+//		float vz = Mathf.Lerp (0.5f, v1, v3);
 
 		return new Vector2 (vx, vz);
 	}

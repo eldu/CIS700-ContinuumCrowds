@@ -63,7 +63,7 @@ public class PointCloud : MonoBehaviour {
 
 //			float value = mGrid.getDensity (lp);
 //			float value = mGrid.getAverageVelocityZ(lp) / 4;
-//			float value = mGrid.getAverageVelocity (lp).x;
+//			float value = mGrid.getAverageVelocityX (lp);
 			float value = mGrid.getCost (lp) / 6.0f;
 //			float value = mGrid.getPotential(lp) / 17.0f;
 
@@ -73,6 +73,10 @@ public class PointCloud : MonoBehaviour {
 			} else {
 				colors [i] = new Color (value, value, value, 1);
 			}
+
+//			if (mGrid.getDensity (lp) > 2.0) {
+//				colors [i] = new Color (0, 1, 0, 1);
+//			}
 		}
 
 		// Orange, finding relevant point.

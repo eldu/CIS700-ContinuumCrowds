@@ -5,7 +5,7 @@ using System.Collections.Generic;
 public class ContinuumSolver : MonoBehaviour {
 	// Set up agents
 	public GameObject original_agent;
-	private List<Agent> agents;
+	private Agent[] agents;
 	public int quantity;
 	private int maxNumAgents = 200;
 
@@ -42,13 +42,22 @@ public class ContinuumSolver : MonoBehaviour {
 	// After everything has been initalized
 	void Awake() {
 		// Populate Agents
-		agents = new List<Agent>(quantity);
-		agents.Add(original_agent.GetComponent<Agent> ());
-		for (int i = 1; i < quantity; i++) {
-			GameObject temp = (GameObject) Instantiate (original_agent, new Vector3 (i * 2.0f, 0, 0), Quaternion.identity);
-			agents.Add(temp.GetComponent<Agent> ());
-//			Rigidbody rb = agents [i].GetComponent<Rigidbody> ();
-//			rb.velocity = new Vector3(0, 0, 0);
+		agents = new Agent[quantity];
+		agents[0] = original_agent.GetComponent<Agent> ();
+		original_agent.GetComponent<Rigidbody> ().velocity = new Vector3 (0, 0, 3.5f);
+		int count = 1;
+		for (int i = 0; i < 4; i++) {
+			for (int j = 0; j < 4; j++) {
+				if (count < quantity) {
+					GameObject temp = (GameObject)Instantiate (original_agent, new Vector3 (i * 5 - 2.0f, 0, j * 5 - 2.0f), Quaternion.identity);
+					agents [count] = temp.GetComponent<Agent> ();
+					Rigidbody rb = agents [count].GetComponent<Rigidbody> ();
+					rb.velocity = new Vector3 (0, 0, 3.5f);
+					count++;
+				} else {
+					break;
+				}
+			}
 		}
 
 	}
@@ -66,7 +75,7 @@ public class ContinuumSolver : MonoBehaviour {
 		// For each group
 		// Construct Unit Cost Field
 		// Calculate Speed Fields and Update Average Velocity
-		mGrid.UpdateVelocityAndCostFields ();
+		mGrid.UpdateSpeedAndCostFields ();
 
 		// Dynamic Potentional Field Construction
 		mGrid.constructPotentialField();
@@ -85,11 +94,26 @@ public class ContinuumSolver : MonoBehaviour {
 			a.setVelocity(velocity, Time.deltaTime);
 
 			// Collision with goal
-			if (a.atGoal()) {
-				agents.Remove (a);
-			}
+//			if (a.atGoal()) {
+//				agents.Remove (a);
+//			}
+
+//			// Boundary Conditions
+//			if ((a.getWorldPosition ().x < min.x && a.getWorldPosition ().y < min.y) ||
+//				a.getWorldPosition().y > max.y && a.getWorldPosition().x > max.x) {
+//				a.setVelocity(new Vector2 (0.0f, 0.0f), Time.deltaTime);
+//			}
 
 			// TODO Forced minimum distance
+//			foreach (Agent b in agents) {
+//				if (a != b) {
+//					Vector2 blocal = mGrid.getLocalPoint (b.getWorldPosition ());
+//					if (Vector2.Distance (a, b) < 0.2f) {
+//						// Shove b
+//
+//					}
+//				}
+//			}
 		}
 
 		mGrid.clear ();
