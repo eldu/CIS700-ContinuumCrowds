@@ -47,6 +47,10 @@ public class Grid2D<T> {
 	}
 
 	public void set(int idx, T value) {
+		if (idx < 0) {
+			return;
+		}
+
 		data [idx] = value;
 	}
 

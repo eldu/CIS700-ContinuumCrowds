@@ -1,9 +1,14 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System;
 
 public class Agent : MonoBehaviour {
 	public Transform goal;
+	public GameObject goalObject;
+
+	public string goalTag = "DEBUG";
+	private bool reachedGoal = false;
 
 	public float radius = 0.5f;
 	public float height = 2.0f;
@@ -16,9 +21,6 @@ public class Agent : MonoBehaviour {
 	public float STOPPING_DISTANCE = 0.0f; // Stop within this distance form the target position
 	public bool autoBraking = true;
 
-//	public float vx;
-//	public float vz;
-
 //	private Vector3 destination;
 //	private float densityExponent = 2.0f; // lamda, speed of density falloff
 
@@ -29,10 +31,10 @@ public class Agent : MonoBehaviour {
 	public ContinuumSolver cs;
 
 	// Use this for initialization
-	void Start () {
+	void Awake () {
 //		destination = goal.position;
-//		vx = MAX_SPEED;
-//		vz = MAX_SPEED;
+		Console.WriteLine(goalTag);
+//		goalObject.tag = goalTag;
 	}
 	
 	// Update is called once per frame
@@ -40,18 +42,22 @@ public class Agent : MonoBehaviour {
 
 	}
 
-	public void setVelocity(Vector2 v) {
+	public void setVelocity(Vector2 velocity, float dt) {
+		Vector2 v = Vector2.ClampMagnitude (velocity, MAX_SPEED + 20);
+//		Vector2 direction = velocity.normalized;
+
 		Vector3 result = new Vector3 (v [0], GetComponent<Rigidbody> ().velocity.y, v [1]);
-		GetComponent<Rigidbody> ().velocity.Set (result.x, result.y, result.z);
+		if (float.IsNaN (result.x)) {
+			result.x = 0.0f;
+		}
+
+		if (float.IsNaN (result.z)) {
+			result.z = 0.0f;
+		}
+
+		GetComponent<Rigidbody> ().velocity = result;
 	}
-
-//	public void setOrientation(Vector2 v) {
-//		Vector3 result = new Vector3 (v [0], 0, v [1]);
-//		GetComponent<Rigidbody> ().transform.forward = result;
-////		GetComponent<Rigidbody> ().velocity.Set (result.x, result.y, result.z);
-//
-//	}
-
+		
 	public Vector2 getWorldPosition () {
 		Vector2 result = new Vector2(GetComponent<Transform> ().position.x, GetComponent<Transform> ().position.z);
 		return result;
@@ -62,10 +68,13 @@ public class Agent : MonoBehaviour {
 		return new Vector2 (Mathf.Cos (orientation.y), Mathf.Sin (orientation.y));
 	}
 
-	public void eulerStep(Vector2 velocity, float dt) {
-		Vector2 v = Vector2.ClampMagnitude (velocity, MAX_SPEED);
-		Vector2 direction = velocity.normalized;
+	public void OnTriggerEnter(Collider other) {
+		if (other.gameObject.tag == goalTag) {
+			reachedGoal = true;
+		}
+	}
 
-		setVelocity (v);
+	public bool atGoal() {
+		return reachedGoal;
 	}
 }

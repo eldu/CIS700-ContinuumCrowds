@@ -5,7 +5,7 @@ using System.Collections.Generic;
 public class ContinuumSolver : MonoBehaviour {
 	// Set up agents
 	public GameObject original_agent;
-	private Agent[] agents;
+	private List<Agent> agents;
 	public int quantity;
 	private int maxNumAgents = 200;
 
@@ -30,22 +30,8 @@ public class ContinuumSolver : MonoBehaviour {
 	public float DISCOMFORT = 0.8f;
 	public float DISCOMFORT_WEIGHT = 0.8f;
 
-
-//	// FPS Counter
-//	public float updateInterval = 0.5F;
-//	private double lastInterval;
-//	private int frames;
-//	private float fps;
-
-//	void OnGUI() {
-//		GUILayout.Label("" + fps.ToString("f2"));
-//	}
-
 	// Use this for initialization
 	void Start () {
-//		lastInterval = Time.realtimeSinceStartup;
-//		frames = 0;
-
 		quantity = (int) Mathf.Clamp (quantity, 0, maxNumAgents);
 //		obstacles = Object.FindObjectsOfType (typeof(Obstacle)) as Obstacle[];
 
@@ -55,32 +41,20 @@ public class ContinuumSolver : MonoBehaviour {
 
 	// After everything has been initalized
 	void Awake() {
-		// Set FPS
-//		Application.targetFrameRate = -1; // As fast as it can
-
 		// Populate Agents
-		agents = new Agent[quantity];
-		agents [0] = original_agent.GetComponent<Agent> ();
+		agents = new List<Agent>(quantity);
+		agents.Add(original_agent.GetComponent<Agent> ());
 		for (int i = 1; i < quantity; i++) {
 			GameObject temp = (GameObject) Instantiate (original_agent, new Vector3 (i * 2.0f, 0, 0), Quaternion.identity);
-			agents [i] = temp.GetComponent<Agent> ();
-			Rigidbody rb = agents [i].GetComponent<Rigidbody> ();
-			rb.velocity = new Vector3(3, 0, 3);
+			agents.Add(temp.GetComponent<Agent> ());
+//			Rigidbody rb = agents [i].GetComponent<Rigidbody> ();
+//			rb.velocity = new Vector3(0, 0, 0);
 		}
 
 	}
 
 	// Update is called once per frame
 	void FixedUpdate () {
-//		++frames;
-//		float timeNow = Time.realtimeSinceStartup;
-//		if (timeNow > lastInterval + updateInterval) {
-//			fps = (float)(frames / timeNow - lastInterval);
-//			frames = 0;
-//			lastInterval = timeNow;
-//		}
-
-
 		// Clear Grids
 		mGrid.clear ();
 
@@ -96,37 +70,26 @@ public class ContinuumSolver : MonoBehaviour {
 
 		// Dynamic Potentional Field Construction
 		mGrid.constructPotentialField();
+		mGrid.computePotentialGradient ();
+		mGrid.computeVelocitiesFromPotentials ();
 
-//		// Boundary Conditions
+//		// TODO Boundary Conditions
 //
 //		// Update Colors
 		GetComponent<PointCloud> ().updateMesh (mGrid);
 //
 //		// Advect
 		foreach (Agent a in agents) {
-//			Rigidbody rb = a.GetComponent<Rigidbody> ();
-//			Vector3 whatamilookingat = rb.velocity; 
-
 			Vector2 localpt = mGrid.getLocalPoint (a.getWorldPosition ());
 			Vector2 velocity = mGrid.interpolateVelocity (localpt);
-			a.eulerStep(velocity, Time.deltaTime);
+			a.setVelocity(velocity, Time.deltaTime);
 
-//			int Uidx = mGrid.gridRose [0].getIdx (localpt);
-//			int Vidx = mGrid.gridRose [1].getIdx (localpt);
-//
-//			float Upotential = mGrid.gradU.get (Uidx);
-//			float Vpotential = mGrid.gradV.get (Vidx);
-//
-//			float flowspeed = mGrid.getSpeed(localpt, a.getNormal());
-//			Vector2 potential = new Vector2 (Upotential, Vpotential);
-//
-//			Vector2 result = -1 * flowspeed * potential.normalized;
-//
-//			rb.velocity = new Vector3(result[0], 0, result[1]);
-//			Vector3 oldAngle = rb.rotation.eulerAngles;
-//			rb.velocity = new Vector3(3, 0, 3);
-//			Vector3 newAngle = rb.rotation.eulerAngles;
-//			float nothing = 4.5f;
+			// Collision with goal
+			if (a.atGoal()) {
+				agents.Remove (a);
+			}
+
+			// TODO Forced minimum distance
 		}
 
 		mGrid.clear ();

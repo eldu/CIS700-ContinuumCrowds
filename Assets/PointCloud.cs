@@ -71,7 +71,7 @@ public class PointCloud : MonoBehaviour {
 				value = 1;
 				colors [i] = new Color (0, 0, value, 1);
 			} else {
-				colors [i] = new Color (0, value, 0, 1);
+				colors [i] = new Color (value, value, value, 1);
 			}
 		}
 

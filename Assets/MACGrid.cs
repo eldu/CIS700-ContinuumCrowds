@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 using System;
 
 
@@ -28,8 +29,10 @@ public class MACGrid {
 	public Grid2D<float> gridPotential;
 	public Grid2D<float> gridD; // Density Grid
 	public Grid2D<int> marker; // 0 = empty, 1 = obstacle
-	public Grid2D<float>[] gridRose = new Grid2D<float>[4]; // Velocity
-	public Grid2D<float>[] gridCost = new Grid2D<float>[4]; 
+	public Grid2D<float>[] gridSpeed = new Grid2D<float>[4]; // Velocity
+	public Grid2D<float>[] gridCost = new Grid2D<float>[4]; // Cost
+	public Grid2D<float>[] gridPotentialGradient = new Grid2D<float>[4]; // gradient potential
+	public Grid2D<float>[] gridVelocity = new Grid2D<float>[4];
 	public Grid2D<float> gridAverageVelocityX;
 	public Grid2D<float> gridAverageVelocityZ;
 
@@ -77,14 +80,25 @@ public class MACGrid {
 		gridPotential = new Grid2D<float> (resx, resz);
 		marker = new Grid2D<int> (resx, resz);
 
-		gridRose [0] = new Grid2D<float> (resx + 1, resz);
+		gridSpeed [0] = new Grid2D<float> (resx + 1, resz);
 		gridCost [0] = new Grid2D<float> (resx + 1, resz);
-		gridRose [1] = new Grid2D<float> (resx, resz + 1);
+		gridPotentialGradient [0] = new Grid2D<float> (resx + 1, resz);
+		gridVelocity [0] = new Grid2D<float> (resx + 1, resz);
+
+		gridSpeed [1] = new Grid2D<float> (resx, resz + 1);
 		gridCost [1] = new Grid2D<float> (resx, resz + 1);
-		gridRose [2] = new Grid2D<float> (resx + 1, resz);
+		gridPotentialGradient [1] = new Grid2D<float> (resx, resz + 1);
+		gridVelocity [1] = new Grid2D<float> (resx, resz + 1);
+
+		gridSpeed [2] = new Grid2D<float> (resx + 1, resz);
 		gridCost [2] = new Grid2D<float> (resx + 1, resz);
-		gridRose [3] = new Grid2D<float> (resx, resz + 1);
+		gridPotentialGradient [2] = new Grid2D<float> (resx + 1, resz);
+		gridVelocity [2] = new Grid2D<float> (resx + 1, resz);
+
+		gridSpeed [3] = new Grid2D<float> (resx, resz + 1);
 		gridCost [3] = new Grid2D<float> (resx, resz + 1);
+		gridPotentialGradient [3] = new Grid2D<float> (resx, resz + 1);
+		gridVelocity [3] = new Grid2D<float> (resx, resz + 1);
 
 		// Set up Goal
 		this.box = goal;
@@ -115,17 +129,15 @@ public class MACGrid {
 		gridAverageVelocityX.clear ();
 		gridAverageVelocityZ.clear ();
 		gridPotential.clear ();
-		gridRose [0] = new Grid2D<float> (resx + 1, resz);
-		gridCost [0] = new Grid2D<float> (resx + 1, resz);
-		gridRose [1] = new Grid2D<float> (resx, resz + 1);
-		gridCost [1] = new Grid2D<float> (resx, resz + 1);
-		gridRose [2] = new Grid2D<float> (resx + 1, resz);
-		gridCost [2] = new Grid2D<float> (resx + 1, resz);
-		gridRose [3] = new Grid2D<float> (resx, resz + 1);
-		gridCost [3] = new Grid2D<float> (resx, resz + 1);
+		for (int i = 0; i < 4; i++) {
+			gridSpeed [i].clear ();
+			gridCost [i].clear ();
+			gridPotentialGradient [i].clear ();
+			gridVelocity [i].clear ();
+		}
 	}
 
-	public void splat(Agent[] agents) {
+	public void splat(List<Agent> agents) {
 		foreach (Agent a in agents) {
 			// the density field must be continuous with respect to the location of the people
 			// each person should contribute no less than p to any neighboring cell//
@@ -222,6 +234,16 @@ public class MACGrid {
 		}
 	}
 
+	public float getP(int i, int j) {
+		int idx = gridPotential.convertIdx (i, j);
+
+		if (idx < 0) {
+			return Mathf.Infinity;
+		} else {
+			return gridPotential.get (idx);
+		}
+	}
+
 	public float getPotential(Vector2 localpt) {
 		int idx = gridPotential.getIdx (localpt);
 
@@ -311,7 +333,7 @@ public class MACGrid {
 					// High Density
 					f = fv;
 				}
-				gridRose [0].set (i, j, f);
+				gridSpeed [0].set (i, j, f);
 				c = PATH_LENGTH_WEIGHT * f + TIME_WEIGHT + DISCOMFORT_WEIGHT * distance(dirs[0]) / f;
 				gridCost [0].set (i, j, c);
 
@@ -328,7 +350,7 @@ public class MACGrid {
 					// High Density
 					f = fv;
 				}
-				gridRose [1].set (i, j, f);
+				gridSpeed [1].set (i, j, f);
 				c = PATH_LENGTH_WEIGHT * f + TIME_WEIGHT + DISCOMFORT_WEIGHT * distance(dirs[1]) / f;
 				gridCost [1].set (i, j, c);
 
@@ -345,7 +367,7 @@ public class MACGrid {
 					// High Density
 					f = fv;
 				}
-				gridRose [2].set (i, j, f);
+				gridSpeed [2].set (i, j, f);
 				c = PATH_LENGTH_WEIGHT * f + TIME_WEIGHT + DISCOMFORT_WEIGHT * distance(dirs[2]) / f;
 				gridCost [2].set (i, j, c);
 
@@ -363,13 +385,55 @@ public class MACGrid {
 					// High Density
 					f = fv;
 				}
-				gridRose [3].set (i, j, f);
+				gridSpeed [3].set (i, j, f);
 				c = PATH_LENGTH_WEIGHT * f + TIME_WEIGHT + DISCOMFORT_WEIGHT * distance(dirs[3]) / f;
 				gridCost [3].set (i, j, c);
 			}
 		}
 	}
 
+	public void computePotentialGradient() {
+		float a, b;
+
+		for (int i = 0; i < resx; i++) {
+			for (int j = 0; j < resz; j++) {
+
+				// East
+				a = getP (i, j);
+				b = getP (i + 1, j);
+				gridPotentialGradient [0].set (i, j, b - a);
+
+				// North
+				b = getP (i, j + 1);
+				gridPotentialGradient [1].set (i, j, b - a);
+
+				// West
+				b = getP (i - 1, j);
+				gridPotentialGradient [2].set (i, j, b - a);
+
+				// South
+				b = getP (i, j - 1);
+				gridPotentialGradient [3].set (i, j, b - a);
+			}
+		}
+	}
+
+	// Based on potential
+	public void computeVelocitiesFromPotentials () {
+		float gradPotential, flowspeed, v;
+
+		for (int i = 0; i < resx; i++) {
+			for (int j = 0; j < resz; j++) {
+				for (int k = 0; k < 4; k++) { // All directions
+					gradPotential = gridPotentialGradient [k].get (i, j);
+					flowspeed = gridSpeed [k].get (i, j);
+					v = -1.0f * flowspeed * gradPotential;
+					gridVelocity [k].set (i, j, v);
+				}
+			}
+		}
+		
+	}
 
 	public void constructPotentialField() {
 		for (int i = 0; i < resx; i++) {
@@ -617,20 +681,25 @@ public class MACGrid {
 		float vx = a * (1.0f - dy) + b * dy;
 		float vy = c * (1.0f - dy) + d * dy;
 
-		return new Vector2 (vx, vy);
+		return new Vector2 (vx, vy) * cellWidth;
 	}
 		
 
 	public Vector2 centerVelocity(int i, int j) {
 		// Get velocities in all four directions
-		float v0 = gridRose [0].get (i, j); // E
-		float v1 = gridRose [1].get (i, j); // N
-		float v2 = gridRose [2].get (i, j); // W
-		float v3 = gridRose [3].get (i, j); // S
+		float v0 = gridVelocity [0].get (i, j); // E
+		float v1 = gridVelocity [1].get (i, j); // N
+		float v2 = gridVelocity [2].get (i, j); // W
+		float v3 = gridVelocity [3].get (i, j); // S
 
-		float vx = Mathf.Lerp (0.5f, v0, v2);
-		float vz = Mathf.Lerp (0.5f, v1, v3);
+		float vx = 0.5f * (v0 + v2) - v2; 
+		float vz = 0.5f * (v1 + v3) - v3;
 
 		return new Vector2 (vx, vz);
+	}
+
+	public bool atGoal(Vector3 pos) {
+//		if (pos.x >= box_min.x && 
+		return false;
 	}
 }
