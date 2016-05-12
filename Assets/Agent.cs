@@ -9,12 +9,15 @@ public class Agent : MonoBehaviour {
 	public float height = 2.0f;
 	public float baseOffset = 0.0f;
 
-	// TODO. Does nothing.
+	// TODO
 	public float MAX_SPEED = 3.5f; // Maximum movement speed when following a path
 	public float MAX_ANGULAR_SPEED = 120.0f; // maximum turning speed in (deg/s) while following a path
 	public float MAX_ACCELERATION = 8.0f; // max acceleration of an agent as it follows a path, given in units/sec^2
 	public float STOPPING_DISTANCE = 0.0f; // Stop within this distance form the target position
 	public bool autoBraking = true;
+
+//	public float vx;
+//	public float vz;
 
 //	private Vector3 destination;
 //	private float densityExponent = 2.0f; // lamda, speed of density falloff
@@ -28,6 +31,8 @@ public class Agent : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 //		destination = goal.position;
+//		vx = MAX_SPEED;
+//		vz = MAX_SPEED;
 	}
 	
 	// Update is called once per frame
@@ -40,12 +45,12 @@ public class Agent : MonoBehaviour {
 		GetComponent<Rigidbody> ().velocity.Set (result.x, result.y, result.z);
 	}
 
-	public void setOrientation(Vector2 v) {
-		Vector3 result = new Vector3 (v [0], 0, v [1]);
-		GetComponent<Rigidbody> ().transform.forward = result;
-//		GetComponent<Rigidbody> ().velocity.Set (result.x, result.y, result.z);
-
-	}
+//	public void setOrientation(Vector2 v) {
+//		Vector3 result = new Vector3 (v [0], 0, v [1]);
+//		GetComponent<Rigidbody> ().transform.forward = result;
+////		GetComponent<Rigidbody> ().velocity.Set (result.x, result.y, result.z);
+//
+//	}
 
 	public Vector2 getWorldPosition () {
 		Vector2 result = new Vector2(GetComponent<Transform> ().position.x, GetComponent<Transform> ().position.z);

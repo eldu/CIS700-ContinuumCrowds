@@ -14,7 +14,6 @@ public class MACGrid {
 
 	private int resx;
 	private int resz;
-
 	public float cellWidth;
 
 	// Goal
@@ -31,18 +30,16 @@ public class MACGrid {
 	public Grid2D<int> marker; // 0 = empty, 1 = obstacle
 	public Grid2D<float>[] gridRose = new Grid2D<float>[4]; // Velocity
 	public Grid2D<float>[] gridCost = new Grid2D<float>[4]; 
-//	public Grid2D<float> gradU;
-	public Grid2D<float> gradV;
 	public Grid2D<float> gridAverageVelocityX;
 	public Grid2D<float> gridAverageVelocityZ;
 
 	// Cardinal Directions
-	Vector2[] n = { new Vector2 (1, 0), new Vector2 (0, 1), new Vector2 (-1, 0), new Vector2 (0, -1) };
+//	Vector2[] n = { new Vector2 (1, 0), new Vector2 (0, 1), new Vector2 (-1, 0), new Vector2 (0, -1) };
 
 	// Tinkering Parameters
 	public float lamda = 1.8f; // Density
 
-	public float MAX_SPEED = 2.5f; // m/s
+	public float MAX_SPEED = 1.0f; // m/s
 	public float MIN_SPEED = 0.5f; // m/s
 
 	public float MIN_DENSITY = 0.1f;
@@ -225,17 +222,6 @@ public class MACGrid {
 		}
 	}
 
-//	public float getSpeed(Vector2 localpt) {
-//		int idx = grid.getIdx (localpt);
-//
-//		// Boundary Conditions
-//		if (idx < 0) {
-//			return MAX_DENSITY + 1;
-//		} else {
-//			return gridD.get (idx);
-//		}
-//	}
-
 	public float getPotential(Vector2 localpt) {
 		int idx = gridPotential.getIdx (localpt);
 
@@ -265,65 +251,127 @@ public class MACGrid {
 		}
 	}
 
-	// Helper function for UpdateVelocityFields
-	public float getSpeed (Vector2 localpt, Vector2 n) {
-		float r = 0.5f;
-		float p = getDensity(localpt);
+	// TODO: Move things into Helper function for UpdateVelocityFields
+//	public float getSpeed (int i, int j, Vector2 n) {
+////		float r = 0.5f;
+//		float p = gridD.get(i, j);
+//
+////		Vector2 localstep = localpt + r * n; // 
+////		float density = getDensity (localstep);
+//
+//		// TODO: Check boundary conditions
+//		// TODO: Incorporate terrain heightfield
+//
+//		float fx;
+//		float ft = MAX_SPEED; // Topological Speed, Ignore Terrain
+//		float fv = Vector2.Dot(new Vector2(getAverageVelocityX(localstep), getAverageVelocityZ(localstep)), n); // flow speed
+//
+//		if (p < MIN_DENSITY) {
+//			// Low density
+//			fx = ft;
+//		} else if (p < MAX_DENSITY) {
+//			// Middle density
+//			fx = ft + (density - MIN_DENSITY) / (MAX_DENSITY - MIN_DENSITY) * (fv - ft);
+//		} else {
+//			// High Density
+//			fx = fv;
+//		}
+//
+//		return fx;
+//	}
 
-		Vector2 localstep = localpt + r * n; // 
-		float density = getDensity (localstep);
-
-		// TODO: Check boundary conditions
-		// TODO: Incorporate terrain heightfield
-
-		float fx;
-		float ft = MAX_SPEED; // Topological Speed, Ignore Terrain
-		float fv = Vector2.Dot(new Vector2(getAverageVelocityX(localstep), getAverageVelocityZ(localstep)), n); // flow speed
-
-		if (p < MIN_DENSITY) {
-			// Low density
-			fx = ft;
-		} else if (p < MAX_DENSITY) {
-			// Middle density
-			fx = ft + (density - MIN_DENSITY) / (MAX_DENSITY - MIN_DENSITY) * (fv - ft);
-		} else {
-			// High Density
-			fx = fv;
-		}
-
-		return fx;
-	}
-
-	// Unit Cost Field
-	public float PATH_LENGTH_WEIGHT = 0.8f;
+	// Update Velocity and Unit Cost Field
+	public float PATH_LENGTH_WEIGHT = 0.5f;
 	public float TIME_WEIGHT = 0.8f;
-	public float DISCOMFORT = 0.8f;
-	public float DISCOMFORT_WEIGHT = 0.8f;
+	public float DISCOMFORT_WEIGHT = 0.5f;
 
 	public void UpdateVelocityAndCostFields() {
 
 
+		float fv; // Flow speed
+		float p; // Pressure
+		float f; // speed field computation
+		float ft = MAX_SPEED; // Topological Speed, Ignore terrain
+		float c; // cost field computation
+
 		for (int i = 0; i < resx; i++) {
 			for (int j = 0; j < resz; j++) {
-				Vector2 ij = new Vector2 (i, j);
-				Vector2[] directions = getDirections (ij);
+				Vector2[] dirs = getDirections (i, j);
 
-				for (int k = 0; k < directions.Length; k++) {
-					// fm --> i
-					float fu = getSpeed (directions [k], n [k]); 
-					gridRose [k].set (ij, fu); // 
-
-					// cm --> i
-					float cu = (PATH_LENGTH_WEIGHT * fu + TIME_WEIGHT + DISCOMFORT_WEIGHT * distance (directions[k])) / fu;
-					gridCost [k].set (ij, cu);
+				// East
+				fv = gridAverageVelocityX.get (i + 1, j);
+				p = gridD.get (i + 1, j);
+				if (p < MIN_DENSITY) {
+					// Low density
+					f = ft;
+				} else if (p < MAX_DENSITY) {
+					// Middle density
+					f = ft + (p - MIN_DENSITY) / (MAX_DENSITY - MIN_DENSITY) * (fv - ft);
+				} else {
+					// High Density
+					f = fv;
 				}
+				gridRose [0].set (i, j, f);
+				c = PATH_LENGTH_WEIGHT * f + TIME_WEIGHT + DISCOMFORT_WEIGHT * distance(dirs[0]) / f;
+				gridCost [0].set (i, j, c);
+
+				// North
+				fv = gridAverageVelocityZ.get (i, j + 1);
+				p = gridD.get (i, j + 1);
+				if (p < MIN_DENSITY) {
+					// Low density
+					f = ft;
+				} else if (p < MAX_DENSITY) {
+					// Middle density
+					f = ft + (p - MIN_DENSITY) / (MAX_DENSITY - MIN_DENSITY) * (fv - ft);
+				} else {
+					// High Density
+					f = fv;
+				}
+				gridRose [1].set (i, j, f);
+				c = PATH_LENGTH_WEIGHT * f + TIME_WEIGHT + DISCOMFORT_WEIGHT * distance(dirs[1]) / f;
+				gridCost [1].set (i, j, c);
+
+				// West
+				fv = gridAverageVelocityX.get (i - 1, j);
+				p = gridD.get (i - 1, j);
+				if (p < MIN_DENSITY) {
+					// Low density
+					f = ft;
+				} else if (p < MAX_DENSITY) {
+					// Middle density
+					f = ft + (p - MIN_DENSITY) / (MAX_DENSITY - MIN_DENSITY) * (fv - ft);
+				} else {
+					// High Density
+					f = fv;
+				}
+				gridRose [2].set (i, j, f);
+				c = PATH_LENGTH_WEIGHT * f + TIME_WEIGHT + DISCOMFORT_WEIGHT * distance(dirs[2]) / f;
+				gridCost [2].set (i, j, c);
+
+
+				// South
+				fv = gridAverageVelocityZ.get (i, j - 1);
+				p = gridD.get (i, j - 1);
+				if (p < MIN_DENSITY) {
+					// Low density
+					f = ft;
+				} else if (p < MAX_DENSITY) {
+					// Middle density
+					f = ft + (p - MIN_DENSITY) / (MAX_DENSITY - MIN_DENSITY) * (fv - ft);
+				} else {
+					// High Density
+					f = fv;
+				}
+				gridRose [3].set (i, j, f);
+				c = PATH_LENGTH_WEIGHT * f + TIME_WEIGHT + DISCOMFORT_WEIGHT * distance(dirs[3]) / f;
+				gridCost [3].set (i, j, c);
 			}
 		}
 	}
 
 
 	public void constructPotentialField() {
-
 		for (int i = 0; i < resx; i++) {
 			for (int j = 0; j < resz; j++) {
 				if (isWithinBounds (goal_minx, goal_miny, goal_maxx, goal_maxy, i, j)) {
@@ -412,13 +460,13 @@ public class MACGrid {
 		return new Node (i, j, M);
 	}
 
-	public Vector2[] getDirections(Vector2 ij) {
+	public Vector2[] getDirections(int i, int j) {
 		Vector2[] result = new Vector2[4];
 		// Counterclockwise
-		result [0] = new Vector2 (ij [0] + 0.5f, ij [1]       ); // East
-		result [1] = new Vector2 (ij [0]       , ij [1] + 0.5f); // North
-		result [2] = new Vector2 (ij [0] - 0.5f, ij [1]       ); // West
-		result [3] = new Vector2 (ij [0]       , ij [1] - 0.5f); // South
+		result [0] = new Vector2 (i + 0.5f, j       ); // East
+		result [1] = new Vector2 (i       , j + 0.5f); // North
+		result [2] = new Vector2 (i - 0.5f, j       ); // West
+		result [3] = new Vector2 (i       , j - 0.5f); // South
 		return result;
 	}
 
