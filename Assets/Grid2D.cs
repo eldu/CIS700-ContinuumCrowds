@@ -180,17 +180,20 @@ public class Grid2D<T> {
 	// -----------------------------------------------------------------------------
 	// Get Cooridnate Positions
 	// -----------------------------------------------------------------------------
-	public Vector2 getCoordVector2(Vector2 idx) {
+	public Vector2 getCellCenter(Vector2 idx) {
 		return new Vector2 (idx [0] + 0.5f, idx [1] + 0.5f);
 	}
-
+		
+	public Vector2 getCellCenter(int i, int j) {
+		return new Vector2 (i + 0.5f, j + 0.5f);
+	}
 
 	// -----------------------------------------------------------------------------
 	// Get the closest bottom left data point
 	// -----------------------------------------------------------------------------
 	public Vector2 getA(Vector2 p) {
 		Vector2 idx = getIdxVec2 (p);
-		Vector2 c1 = getCoordVector2(idx);
+		Vector2 c1 = getCellCenter(idx);
 
 		if (p [0] >= c1 [0]) {
 			if (p [1] >= c1 [1]) {

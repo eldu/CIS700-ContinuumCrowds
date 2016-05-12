@@ -31,15 +31,16 @@ public class MACGrid {
 	public Grid2D<int> marker; // 0 = empty, 1 = obstacle
 	public Grid2D<float>[] gridRose = new Grid2D<float>[4]; // Velocity
 	public Grid2D<float>[] gridCost = new Grid2D<float>[4]; 
-	public Grid2D<float> gradU;
+//	public Grid2D<float> gradU;
 	public Grid2D<float> gradV;
-	public Grid2D<Vector2> gridAverageVelocity;
+	public Grid2D<float> gridAverageVelocityX;
+	public Grid2D<float> gridAverageVelocityZ;
 
 	// Cardinal Directions
 	Vector2[] n = { new Vector2 (1, 0), new Vector2 (0, 1), new Vector2 (-1, 0), new Vector2 (0, -1) };
 
 	// Tinkering Parameters
-	public float lamda = 2.0f; // Density
+	public float lamda = 1.8f; // Density
 
 	public float MAX_SPEED = 2.5f; // m/s
 	public float MIN_SPEED = 0.5f; // m/s
@@ -74,11 +75,9 @@ public class MACGrid {
 
 		// Initialization of Grids
 		gridD = new Grid2D<float>(resx, resz);
-		gridAverageVelocity = new Grid2D<Vector2>(resx, resz);
+		gridAverageVelocityX = new Grid2D<float>(resx, resz);
+		gridAverageVelocityZ = new Grid2D<float>(resx, resz);
 		gridPotential = new Grid2D<float> (resx, resz);
-
-		gradU = new Grid2D<float> (resx + 1, resz);
-		gradV = new Grid2D<float> (resx, resz + 1);
 		marker = new Grid2D<int> (resx, resz);
 
 		gridRose [0] = new Grid2D<float> (resx + 1, resz);
@@ -116,7 +115,8 @@ public class MACGrid {
 	public void clear() {
 		gridD.clear();
 		marker.clear ();
-		gridAverageVelocity.clear();
+		gridAverageVelocityX.clear ();
+		gridAverageVelocityZ.clear ();
 		gridPotential.clear ();
 		gridRose [0] = new Grid2D<float> (resx + 1, resz);
 		gridCost [0] = new Grid2D<float> (resx + 1, resz);
@@ -146,46 +146,58 @@ public class MACGrid {
 			Vector2 Cidx = new Vector2 (Aidx [0] + 1, Aidx [1] + 1);
 			Vector2 Didx = new Vector2 (Aidx [0] + 1, Aidx [1]);
 
-			Vector2 Acoord = gridD.getCoordVector2(Aidx);
+			Vector2 Acoord = gridD.getCellCenter(Aidx);
 
 			float dx = localpt [0] - Acoord [0];
-			float dy = localpt [1] - Acoord [1];
+			float dz = localpt [1] - Acoord [1];
 
 			int A = gridD.convertIdx (Aidx);
 			int B = gridD.convertIdx (Bidx);
 			int C = gridD.convertIdx (Cidx);
 			int D = gridD.convertIdx (Didx);
+		
+			// Density Contribution to Cells
+			float pA = Mathf.Pow (Mathf.Min (1.0f - dx, 1.0f - dz), lamda);
+			float pB = Mathf.Pow (Mathf.Min (dx, 1.0f - dz), lamda);
+			float pC = Mathf.Pow (Mathf.Min (dx, dz), lamda);
+			float pD = Mathf.Pow (Mathf.Min (1.0f - dx, dz), lamda);
 
-
-
+			// Add Contributions
 			if (A > 0) {
-				float p = Mathf.Pow (Mathf.Min (1 - dx, 1 - dy), lamda);
-				gridD.set(A, gridD.get(A) + p);
-				gridAverageVelocity.set(A, gridAverageVelocity.get(A) + new Vector2 (rb.velocity.x / p, rb.velocity.y / p));
-
+				gridD.set(A, gridD.get(A) + pA);
 			}
 			if (B > 0) {
-				float p = Mathf.Pow (Mathf.Min (dx, 1 - dy), lamda);
-				gridD.set(B, gridD.get(B) + p);
-				gridAverageVelocity.set(B, gridAverageVelocity.get(B) + new Vector2 (rb.velocity.x / p, rb.velocity.y / p));
+				gridD.set(B, gridD.get(B) + pB);
 			}
 			if (C > 0) {
-				float p = Mathf.Pow (Mathf.Min (dx, dy), lamda);
-				gridD.set(C, gridD.get(C) + p);
-				gridAverageVelocity.set(C, gridAverageVelocity.get(C) + new Vector2 (rb.velocity.x / p, rb.velocity.y / p));
+				gridD.set(C, gridD.get(C) + pC);
 			}
 			if (D > 0) {
-				float p = Mathf.Pow (Mathf.Min (1 - dx, dy), lamda);
-				gridD.set(D, gridD.get(D) + p);
-				gridAverageVelocity.set(D, gridAverageVelocity.get(D) + new Vector2 (rb.velocity.x / p, rb.velocity.y / p));
+				gridD.set (D, gridD.get (D) + pD);
 			}
 
-			// Divide the speed by the density
-			for (int i = 0; i < resx * resz; i++) {
-				if (gridD.get (i) > 0) {
-					gridAverageVelocity.set(i, gridAverageVelocity.get(i) * 1 / gridD.get (i));
-				}
-			}
+			// Compute Average Velocity Contributions
+			// Equation 7
+			float avAx = rb.velocity.x * pA;
+			float avBx = rb.velocity.x * pB;
+			float avCx = rb.velocity.x * pC;
+			float avDx = rb.velocity.x * pD;
+
+			float avAz = rb.velocity.z * pA;
+			float avBz = rb.velocity.z * pB;
+			float avCz = rb.velocity.z * pC;
+			float avDz = rb.velocity.z * pD;
+
+			// Add Velocity Contributions
+			gridAverageVelocityX.set (A, gridAverageVelocityX.get (A) + avAx);
+			gridAverageVelocityX.set (B, gridAverageVelocityX.get (B) + avBx);
+			gridAverageVelocityX.set (C, gridAverageVelocityX.get (C) + avCx);
+			gridAverageVelocityX.set (D, gridAverageVelocityX.get (D) + avDx);
+
+			gridAverageVelocityZ.set (A, gridAverageVelocityZ.get (A) + avAz);
+			gridAverageVelocityZ.set (B, gridAverageVelocityZ.get (B) + avBz);
+			gridAverageVelocityZ.set (C, gridAverageVelocityZ.get (C) + avCz);
+			gridAverageVelocityZ.set (D, gridAverageVelocityZ.get (D) + avDz);
 		}
 	}
 
@@ -213,6 +225,17 @@ public class MACGrid {
 		}
 	}
 
+//	public float getSpeed(Vector2 localpt) {
+//		int idx = grid.getIdx (localpt);
+//
+//		// Boundary Conditions
+//		if (idx < 0) {
+//			return MAX_DENSITY + 1;
+//		} else {
+//			return gridD.get (idx);
+//		}
+//	}
+
 	public float getPotential(Vector2 localpt) {
 		int idx = gridPotential.getIdx (localpt);
 
@@ -224,12 +247,21 @@ public class MACGrid {
 		}
 	}
 
-	public Vector2 getAverageVelocity(Vector2 localpt) {
+	public float getAverageVelocityX(Vector2 localpt) {
 		int idx = gridD.getIdx (localpt);
 		if (idx < 0) {
-			return new Vector2(0f, 0f); 
+			return Mathf.Infinity;
 		} else {
-			return gridAverageVelocity.get(idx);
+			return gridAverageVelocityX.get(idx);
+		}
+	}
+
+	public float getAverageVelocityZ(Vector2 localpt) {
+		int idx = gridD.getIdx (localpt);
+		if (idx < 0) {
+			return Mathf.Infinity;
+		} else {
+			return gridAverageVelocityZ.get(idx);
 		}
 	}
 
@@ -246,7 +278,7 @@ public class MACGrid {
 
 		float fx;
 		float ft = MAX_SPEED; // Topological Speed, Ignore Terrain
-		float fv = Vector2.Dot(getAverageVelocity(localstep), n); // flow speed
+		float fv = Vector2.Dot(new Vector2(getAverageVelocityX(localstep), getAverageVelocityZ(localstep)), n); // flow speed
 
 		if (p < MIN_DENSITY) {
 			// Low density
@@ -512,4 +544,45 @@ public class MACGrid {
 	}
 
 
+	public Vector2 interpolateVelocity(Vector2 localpt) {
+		// Compute the cell center less than the localpt
+		Vector2 A = gridPotential.getA(localpt);
+		int i = (int) A [0];
+		int j = (int)A [1];
+
+		float dx = localpt.x - A.x;
+		float dy = localpt.y - A.y;
+
+		Vector2 cv00 = centerVelocity (i, j);
+		Vector2 cv10 = centerVelocity (i + 1, j);
+		Vector2 cv11 = centerVelocity (i + 1, j + 1);
+		Vector2 cv01 = centerVelocity (i, j + 1);
+
+		// Bilinear Interpilation
+		// Interpolate on x
+		float a = cv00.x * (1.0f - dx) + cv10.x * dx;
+		float b = cv01.x * (1.0f - dx) + cv11.x * dx;
+		float c = cv00.y * (1.0f - dx) + cv10.y * dx;
+		float d = cv01.y * (1.0f - dx) + cv11.y * dx;
+
+		// Interpolate on y
+		float vx = a * (1.0f - dy) + b * dy;
+		float vy = c * (1.0f - dy) + d * dy;
+
+		return new Vector2 (vx, vy);
+	}
+		
+
+	public Vector2 centerVelocity(int i, int j) {
+		// Get velocities in all four directions
+		float v0 = gridRose [0].get (i, j); // E
+		float v1 = gridRose [1].get (i, j); // N
+		float v2 = gridRose [2].get (i, j); // W
+		float v3 = gridRose [3].get (i, j); // S
+
+		float vx = Mathf.Lerp (0.5f, v0, v2);
+		float vz = Mathf.Lerp (0.5f, v1, v3);
+
+		return new Vector2 (vx, vz);
+	}
 }

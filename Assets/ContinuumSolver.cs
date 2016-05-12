@@ -64,6 +64,8 @@ public class ContinuumSolver : MonoBehaviour {
 		for (int i = 1; i < quantity; i++) {
 			GameObject temp = (GameObject) Instantiate (original_agent, new Vector3 (i * 2.0f, 0, 0), Quaternion.identity);
 			agents [i] = temp.GetComponent<Agent> ();
+			Rigidbody rb = agents [i].GetComponent<Rigidbody> ();
+			rb.velocity = new Vector3(3, 0, 3);
 		}
 
 	}
@@ -95,11 +97,6 @@ public class ContinuumSolver : MonoBehaviour {
 		// Dynamic Potentional Field Construction
 		mGrid.constructPotentialField();
 
-// 
-
-		bool thisshouldbenana = float.IsNaN(5.0f/0.0f);
-		float whattssf = Mathf.Max(4.0f, 5.0f/0.0f);
-
 //		// Boundary Conditions
 //
 //		// Update Colors
@@ -107,20 +104,19 @@ public class ContinuumSolver : MonoBehaviour {
 //
 //		// Advect
 		foreach (Agent a in agents) {
-			Rigidbody rb = a.GetComponent<Rigidbody> ();
+//			Rigidbody rb = a.GetComponent<Rigidbody> ();
 //			Vector3 whatamilookingat = rb.velocity; 
-//
-//			Vector2 localpt = mGrid.getLocalPoint (a.getWorldPosition ());
+
+			Vector2 localpt = mGrid.getLocalPoint (a.getWorldPosition ());
+			Vector2 velocity = mGrid.interpolateVelocity (localpt);
+			a.eulerStep(velocity, Time.deltaTime);
+
 //			int Uidx = mGrid.gridRose [0].getIdx (localpt);
-////			float Uvelocity = mGrid.gridRose [0].get (Uidx);
-//
 //			int Vidx = mGrid.gridRose [1].getIdx (localpt);
-////			float Vvelocity = mGrid.gridRose [1].get (Uidx);
 //
 //			float Upotential = mGrid.gradU.get (Uidx);
 //			float Vpotential = mGrid.gradV.get (Vidx);
 //
-////			Vector2 flowspeed = new Vector2 (Uvelocity, Vvelocity);
 //			float flowspeed = mGrid.getSpeed(localpt, a.getNormal());
 //			Vector2 potential = new Vector2 (Upotential, Vpotential);
 //
@@ -128,7 +124,7 @@ public class ContinuumSolver : MonoBehaviour {
 //
 //			rb.velocity = new Vector3(result[0], 0, result[1]);
 //			Vector3 oldAngle = rb.rotation.eulerAngles;
-			rb.velocity = new Vector3(3, 0, 3);
+//			rb.velocity = new Vector3(3, 0, 3);
 //			Vector3 newAngle = rb.rotation.eulerAngles;
 //			float nothing = 4.5f;
 		}

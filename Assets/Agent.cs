@@ -40,6 +40,13 @@ public class Agent : MonoBehaviour {
 		GetComponent<Rigidbody> ().velocity.Set (result.x, result.y, result.z);
 	}
 
+	public void setOrientation(Vector2 v) {
+		Vector3 result = new Vector3 (v [0], 0, v [1]);
+		GetComponent<Rigidbody> ().transform.forward = result;
+//		GetComponent<Rigidbody> ().velocity.Set (result.x, result.y, result.z);
+
+	}
+
 	public Vector2 getWorldPosition () {
 		Vector2 result = new Vector2(GetComponent<Transform> ().position.x, GetComponent<Transform> ().position.z);
 		return result;
@@ -48,5 +55,12 @@ public class Agent : MonoBehaviour {
 	public Vector2 getNormal() {
 		Vector3 orientation = GetComponent<Animator> ().bodyRotation.eulerAngles;
 		return new Vector2 (Mathf.Cos (orientation.y), Mathf.Sin (orientation.y));
+	}
+
+	public void eulerStep(Vector2 velocity, float dt) {
+		Vector2 v = Vector2.ClampMagnitude (velocity, MAX_SPEED);
+		Vector2 direction = velocity.normalized;
+
+		setVelocity (v);
 	}
 }
