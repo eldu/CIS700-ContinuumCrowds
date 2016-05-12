@@ -95,7 +95,9 @@ public class ContinuumSolver : MonoBehaviour {
 		// Dynamic Potentional Field Construction
 		mGrid.constructPotentialField();
 
-//
+// 
+
+		bool thisshouldbenana = float.IsNaN(5.0f/0.0f);
 		float whattssf = Mathf.Max(4.0f, 5.0f/0.0f);
 
 //		// Boundary Conditions

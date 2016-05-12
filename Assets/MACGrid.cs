@@ -376,94 +376,7 @@ public class MACGrid {
 	}
 
 	public Node calculatePotential(int i, int j) {
-		// Get Neighbors Potential
-		Vector2[] neighbors = gridPotential.getFaceNeighbors (i, j);
-		float mx, my;
-		float b, d; // Min cost in directions x and y
-
-		int n0idx = gridPotential.getIdx (neighbors [0]);
-		int n1idx = gridPotential.getIdx (neighbors [1]);
-		int n2idx = gridPotential.getIdx (neighbors [2]);
-		int n3idx = gridPotential.getIdx (neighbors [3]);
-
-		float p0, p1, p2, p3; // Potentials of neighbors
-		float c0, c1, c2, c3; // Costs of neighbors in same neighbor direction
-
-		if (n0idx < 0) {
-			p0 = Mathf.Infinity;
-			c0 = Mathf.Infinity;
-		} else {
-			p0 = gridPotential.get (n0idx);
-			c0 = gridCost [0].get (n0idx);
-		}
-
-		if (n1idx < 0) {
-			p1 = Mathf.Infinity;
-			c1 = Mathf.Infinity;
-		} else {
-			p1 = gridPotential.get (n1idx);
-			c1 = gridCost [1].get (n1idx);
-		}
-
-		if (n2idx < 0) {
-			p2 = Mathf.Infinity;
-			c2 = Mathf.Infinity;
-		} else {
-			p2 = gridPotential.get (n2idx);
-			c2 = gridCost [2].get (n2idx);
-		}
-
-		if (n3idx < 0) {
-			p3 = Mathf.Infinity;
-			c3 = Mathf.Infinity;
-		} else {
-			p3 = gridPotential.get (n3idx);
-			c3 = gridCost [3].get (n3idx);
-		}
-
-		// Calculate mx and my
-		// mx = argmin{potential_i + cost from m to i}, in W & E directions
-		// my = argmin{potential_i + cost from m to i}, in N & S directions)
-		if (p0 + c0 < p2 + c2) {
-			mx = p0 + c0;
-			b = c0;
-		} else {
-			mx = p2 + c2;
-			b = c2;
-		}
-
-		if (p1 + c1 < p3 + c3) {
-			my = p1 + c1;
-			d = c1;
-		} else {
-			my = p3 + c3;
-			d = c3;
-		}
-
-		// Wolfram Alpha Check
-		// Solve for x in Equation 11 (in paper)
-		float M = 0;
-		if (mx >= Mathf.Infinity - 100 && my >= Mathf.Infinity - 100) {
-			// Both are infinity, shouldn't happen.
-			// Basicallu
-			Console.WriteLine("mx and my are both infinity");
-		} else if (mx >= Mathf.Infinity - 100) {
-			//				M = mx - d; // TODO: ORIGINALY HAD THIS, BUT WHY?
-			M = my - d;
-		} else if (my >= Mathf.Infinity - 100) {
-			//				M = my - d; // TODO: ORIGINALY HAD THIS, BUT WHY?
-			M = mx - b;
-		} else {
-			M = Mathf.Sqrt (b * b * d * d * (-mx * mx + 2 * mx * my + b * b - my * my + d * d)) + mx * d * d + b * b * my;
-
-			float denominator = b * b + d * d;
-			if (Node.fequal (denominator, 0.0f)) {
-				M = Mathf.Infinity;
-			} else {
-				M /= denominator;
-			}
-		}
-
+		float M = solveFiniteDifference (i, j);
 		return new Node (i, j, M);
 	}
 
@@ -499,6 +412,104 @@ public class MACGrid {
 		return (-b + sign * Mathf.Sqrt (b * b - 4.0f * a * c)) / (2.0f * a);
 	}
 
+	private float maxQuadratic(float a, float b, float c) {
+		float plus = solveQuadratic (a, b, c, 1.0f);
+		float minus = solveQuadratic (a, b, c, -1.0f);
+
+		if (float.IsNaN (plus))
+			return minus;
+		if (float.IsNaN (minus))
+			return plus;
+		
+		return Mathf.Max (plus, minus);
+	}
+
+	private float solveFiniteDifference(int i, int j) {
+		// Get Neighbors Potential
+		Vector2[] neighbors = gridPotential.getFaceNeighbors (i, j);
+
+		int n0idx = gridPotential.getIdx (neighbors [0]);
+		int n1idx = gridPotential.getIdx (neighbors [1]);
+		int n2idx = gridPotential.getIdx (neighbors [2]);
+		int n3idx = gridPotential.getIdx (neighbors [3]);
+
+		// E, N, W, S
+		float p0, p1, p2, p3; // Potentials of neighbors
+		float c0, c1, c2, c3; // Costs of neighbors in same neighbor direction
+
+		if (n0idx < 0) {
+			p0 = Mathf.Infinity;
+			c0 = Mathf.Infinity;
+		} else {
+			p0 = gridPotential.get (n0idx);
+			c0 = gridCost [0].get (n0idx);
+		}
+
+		if (n1idx < 0) {
+			p1 = Mathf.Infinity;
+			c1 = Mathf.Infinity;
+		} else {
+			p1 = gridPotential.get (n1idx);
+			c1 = gridCost [1].get (n1idx);
+		}
+
+		if (n2idx < 0) {
+			p2 = Mathf.Infinity;
+			c2 = Mathf.Infinity;
+		} else {
+			p2 = gridPotential.get (n2idx);
+			c2 = gridCost [2].get (n2idx);
+		}
+
+		if (n3idx < 0) {
+			p3 = Mathf.Infinity;
+			c3 = Mathf.Infinity;
+		} else {
+			p3 = gridPotential.get (n3idx);
+			c3 = gridCost [3].get (n3idx);
+		}
+
+		// Obtain Potential and Cost in x and z directions
+		float px, pz, cx, cz;
+
+		if (p0 + c0 < p2 + c2) {
+			px = p0;
+			cx = c0;
+		} else {
+			px = p2;
+			cx = c2;
+		}
+
+		if (p1 + c1 < p3 + c3) {
+			pz = p1;
+			cz = c1;
+		} else {
+			pz = p3;
+			cz = c3;
+		}
+
+		// Solve for the potential using the quadratic formula
+		// Drop infinite terms
+		float a, b, c;
+		float cx2 = cx * cx;
+		float cz2 = cz * cz;
+
+		if (px < Mathf.Infinity && pz < Mathf.Infinity) {
+			a = cx2 + cz2;
+			b = -2.0f * px * cz2 - 2.0f * pz * cx2;
+			c = cz2 * px * px + cx2 * pz * pz - cx2 * cz2;
+		} else if (px < Mathf.Infinity) {
+			a = 1.0f;
+			b = -2.0f * px;
+			c = px * px - cx2;
+		} else {
+			a = 1.0f;
+			b = -2.0f * pz;
+			c = pz * pz - cz2;
+		}
+			
+		return maxQuadratic (a, b, c);
+	}
 
 
 }
