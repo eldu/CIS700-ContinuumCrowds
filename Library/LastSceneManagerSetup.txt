@@ -1,4 +1,4 @@
 sceneSetups:
-- path: Assets/2Goals.unity
+- path: Assets/Simple_Plane.unity
   isLoaded: 1
   isActive: 1
