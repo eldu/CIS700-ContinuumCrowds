@@ -46,6 +46,7 @@
   </ItemGroup>
   <ItemGroup>
      <Compile Include="Assets\Agent.cs" />
+     <Compile Include="Assets\CSWHAT.cs" />
      <Compile Include="Assets\ContinuumSolver.cs" />
      <Compile Include="Assets\EnablePointSize.cs" />
      <Compile Include="Assets\Grid2D.cs" />

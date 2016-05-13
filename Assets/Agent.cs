@@ -28,7 +28,7 @@ public class Agent : MonoBehaviour {
 	public List<GameObject> collidingWalls;
 
 	// Pointer to ContinuumSolver
-	public ContinuumSolver cs;
+//	public ContinuumSolver cs;
 
 	// Use this for initialization
 	void Awake () {

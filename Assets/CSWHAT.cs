@@ -2,21 +2,20 @@
 using System.Collections;
 using System.Collections.Generic;
 
-public class ContinuumSolver : MonoBehaviour {
+public class CSWHAT : MonoBehaviour {
 	// Set up agents
 	public GameObject original_agent;
 	private Agent[] agents;
 	public int quantity;
 	private int maxNumAgents = 200;
-
-	public float offsetx = 0.5f;
-	public float offsetz = 0.5f;
+	public float offsetx;
+	public float offsetz;
 
 	// Set up goal
 	public GameObject goal;
 
 	// Set up obstacles
-//	public Obstacle[] obstacles;
+	//	public Obstacle[] obstacles;
 
 	private Vector2 min = new Vector2(-50, -50); // Bottom left corner
 	private Vector2 max = new Vector2(50, 50); // Top right corner
@@ -36,7 +35,7 @@ public class ContinuumSolver : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 		quantity = (int) Mathf.Clamp (quantity, 0, maxNumAgents);
-//		obstacles = Object.FindObjectsOfType (typeof(Obstacle)) as Obstacle[];
+		//		obstacles = Object.FindObjectsOfType (typeof(Obstacle)) as Obstacle[];
 
 		// Initalize the MAC Grid
 		mGrid = new MACGrid(min, max, resolution, goal.GetComponent<BoxCollider>());
@@ -52,7 +51,7 @@ public class ContinuumSolver : MonoBehaviour {
 		for (int i = 0; i < 4; i++) {
 			for (int j = 0; j < 4; j++) {
 				if (count < quantity) {
-					GameObject temp = (GameObject)Instantiate (original_agent, new Vector3 (i * 5 - 2.0f + offsetx, 0, j * 5 - 2.0f + offsetz), Quaternion.identity);
+					GameObject temp = (GameObject)Instantiate (original_agent, new Vector3 (i * 5 - offsetx, 0, j * 5 - offsetz), Quaternion.identity);
 					agents [count] = temp.GetComponent<Agent> ();
 					Rigidbody rb = agents [count].GetComponent<Rigidbody> ();
 					rb.velocity = new Vector3 (0, 0, 3.5f);
@@ -85,39 +84,38 @@ public class ContinuumSolver : MonoBehaviour {
 		mGrid.computePotentialGradient ();
 		mGrid.computeVelocitiesFromPotentials ();
 
-//		// TODO Boundary Conditions
-//
-//		// Update Colors
-//		GetComponent<PointCloud> ().updateMesh (mGrid);
-//
-//		// Advect
+		//		// TODO Boundary Conditions
+		//
+		//		// Update Colors
+		GetComponent<PointCloud> ().updateMesh (mGrid);
+		//
+		//		// Advect
 		foreach (Agent a in agents) {
 			Vector2 localpt = mGrid.getLocalPoint (a.getWorldPosition ());
 			Vector2 velocity = mGrid.interpolateVelocity (localpt);
 			a.setVelocity(velocity, Time.deltaTime);
 
-
 			// Collision with goal
-//			if (a.atGoal()) {
-//				agents.Remove (a);
-//			}
+			//			if (a.atGoal()) {
+			//				agents.Remove (a);
+			//			}
 
-//			// Boundary Conditions
-//			if ((a.getWorldPosition ().x < min.x && a.getWorldPosition ().y < min.y) ||
-//				a.getWorldPosition().y > max.y && a.getWorldPosition().x > max.x) {
-//				a.setVelocity(new Vector2 (0.0f, 0.0f), Time.deltaTime);
-//			}
+			//			// Boundary Conditions
+			//			if ((a.getWorldPosition ().x < min.x && a.getWorldPosition ().y < min.y) ||
+			//				a.getWorldPosition().y > max.y && a.getWorldPosition().x > max.x) {
+			//				a.setVelocity(new Vector2 (0.0f, 0.0f), Time.deltaTime);
+			//			}
 
 			// TODO Forced minimum distance
-//			foreach (Agent b in agents) {
-//				if (a != b) {
-//					Vector2 blocal = mGrid.getLocalPoint (b.getWorldPosition ());
-//					if (Vector2.Distance (a, b) < 0.2f) {
-//						// Shove b
-//
-//					}
-//				}
-//			}
+			//			foreach (Agent b in agents) {
+			//				if (a != b) {
+			//					Vector2 blocal = mGrid.getLocalPoint (b.getWorldPosition ());
+			//					if (Vector2.Distance (a, b) < 0.2f) {
+			//						// Shove b
+			//
+			//					}
+			//				}
+			//			}
 		}
 
 		mGrid.clear ();

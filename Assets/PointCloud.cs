@@ -61,10 +61,10 @@ public class PointCloud : MonoBehaviour {
 			Vector2 world = new Vector2 (mesh.vertices [i].x - 0.5f, mesh.vertices [i].y - 0.5f); // TODO: Minus 0.5f not necessary
 			Vector2 lp = mGrid.getLocalPoint(world);
 
-//			float value = mGrid.getDensity (lp);
+			float value = mGrid.getDensity (lp);
 //			float value = mGrid.getAverageVelocityZ(lp) / 4;
 //			float value = mGrid.getAverageVelocityX (lp);
-			float value = mGrid.getCost (lp) / 6.0f;
+//			float value = mGrid.getCost (lp) / 9.0f;
 //			float value = mGrid.getPotential(lp) / 17.0f;
 
 			if (value == Mathf.Infinity) {
@@ -78,6 +78,10 @@ public class PointCloud : MonoBehaviour {
 //				colors [i] = new Color (0, 1, 0, 1);
 //			}
 		}
+
+//		for (int i = 0; i < colors.Length; i++) {
+//			colors [i] = new Color (1, 1, 1);
+//		}
 
 		// Orange, finding relevant point.
 //		colors [92] = new Color (1, 1, 0);
