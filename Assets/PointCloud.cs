@@ -30,8 +30,8 @@ public class PointCloud : MonoBehaviour {
 				int idx = i * side + j;
 //				points[idx] = new Vector3 (i * scale - 50.0f, 0, j * scale - 50.0f);
 				points [idx] = new Vector3 ((i - side / 2) * scale, (j - side / 2) * scale, 0);
-				colors [idx] = new Color(Random.Range(0.0f,1.0f), Random.Range (0.0f,1.0f), Random.Range(0.0f,1.0f),1.0f);
-				//				colors [idx] = new Color(1, 0, 0, 1);
+//				colors [idx] = new Color(Random.Range(0.0f,1.0f), Random.Range (0.0f,1.0f), Random.Range(0.0f,1.0f),1.0f);
+								colors [idx] = new Color(1, 1, 1, 1);
 			}
 		}
 
@@ -61,11 +61,11 @@ public class PointCloud : MonoBehaviour {
 			Vector2 world = new Vector2 (mesh.vertices [i].x - 0.5f, mesh.vertices [i].y - 0.5f); // TODO: Minus 0.5f not necessary
 			Vector2 lp = mGrid.getLocalPoint(world);
 
-			float value = mGrid.getDensity (lp);
+//			float value = mGrid.getDensity (lp);
 //			float value = mGrid.getAverageVelocityZ(lp) / 4;
 //			float value = mGrid.getAverageVelocityX (lp);
 //			float value = mGrid.getCost (lp) / 9.0f;
-//			float value = mGrid.getPotential(lp) / 17.0f;
+			float value = mGrid.getPotential(lp) / 17.0f;
 
 			if (value == Mathf.Infinity) {
 				value = 1;

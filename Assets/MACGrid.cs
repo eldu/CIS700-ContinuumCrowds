@@ -45,9 +45,9 @@ public class MACGrid {
 	public float MAX_SPEED = 3.0f; // m/s
 	public float MIN_SPEED = 0.5f; // m/s
 
-	public float MIN_DENSITY = 0.1f;
+	public float MIN_DENSITY = 0.15f;
 //	private float density = (0.5f) ^ lamda;
-	public float MAX_DENSITY = 2.8f;
+	public float MAX_DENSITY = 5.8f;
 
 	public MACGrid (Vector2 min, Vector2 max, Vector2 resolution, BoxCollider goal) {
 //		TODO: Grab components form the transform component to set min and max

@@ -88,7 +88,7 @@ public class ContinuumSolver : MonoBehaviour {
 //		// TODO Boundary Conditions
 //
 //		// Update Colors
-//		GetComponent<PointCloud> ().updateMesh (mGrid);
+		GetComponent<PointCloud> ().updateMesh (mGrid);
 //
 //		// Advect
 		foreach (Agent a in agents) {
